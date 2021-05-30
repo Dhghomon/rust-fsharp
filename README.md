@@ -268,3 +268,143 @@ let matchMood =
 ```
 
 Here as well `myMood` is a `Mood2`. Rustaceans will be in the habit of writing `let myMood: Mood` in any case, but keep in mind that the F# compiler will not do your work for you if you give multiple types the same field names and don't declare their types when making a let binding.
+
+# Currying
+
+Currying doesn't exist in Rust, while F# uses it all the time. Currying means to have a function that takes multiple parameters, but is fine with just taking in one or a few instead of all of them at the same time. For the Rustaceans, it's sort of like this...
+
+```
+fn add_three(num_one: i32, num_two: i32, num_three: i32) {
+    num_one + num_two + num_three
+}
+```
+
+except that the return type is not `i32`, it's whatever's left to make the function work. Give it a single `i32` (let's say we type `add_three(8)`) and now it will know the value of `num_one`, and then pass you back this:
+
+```
+fn two_left(num_two: i32, num_three: i32) {
+    let num_one = 8;
+    num_one + num_two + num_three
+}
+```
+
+(two_left is just a sample name to show what it takes in now)
+
+Now if you type `two_left(9, 10)` it will complete the function with output `i32` and pass back the final number: 27. But if you just give it `two_left(9)`, it will give you:
+
+```
+fn one_left(num_three: i32) -> i32 {
+    let num_one = 8;
+    let num_two = 9;
+    num_one + num_two + num_three
+}
+```
+
+In F# it looks like this:
+
+```
+let addThree a b c = a + b + c
+
+let twoLeft = addThree 8
+let oneLeft = twoLeft 9
+printfn "%i" (oneLeft 10)
+```
+
+Note that the spaces between inputs isn't just F# trying to be cool and minimalistic: it's the currying syntax. If you don't want a function to be curried, put the inputs inside of a tuple:
+
+```
+let addThree (a, b, c) = a + b + c
+
+printfn "%i" (addThree (8, 9, 10))
+```
+
+Fsharpers don't usually like to enclose things in brackets though (especially double brackets) and prefer to use the pipeline operator. This sort of thing might be preferable:
+
+```
+let addThree (a, b, c) = a + b + c
+
+let finalNumber = (8, 9, 10) |> addThree
+
+printfn "%i" finalNumber
+```
+
+So let's talk about the pipeline operator now. Rust has something similar too.
+
+# Pipelining
+
+Rust doesn't use the word pipeline, nor does it have the `|>` operator. However, sometimes you'll see syntax that reminds you of one in the other. First, let's talk about what the pipeline operator does.
+
+Because (almost) everything is an expression in F# too, pretty much everything you get will return something, even a `()` type. With `|>` you can quickly pass the return on to something else. Here's an example:
+
+```
+let addOne x = x + 1
+let timesTwo x = x * 2
+let printIt x = printfn "%A" x
+
+8 |> addOne |> timesTwo |> printIt
+```
+
+So here you see three functions, each of which does something: one adds 1, the next multiplies by two, and the last one prints it.
+
+By the way: `%A` prints the representation of an object. This is most similar to the `Debug` trait in Rust, which uses `{:?}` (for Debug printing) instead of `{}` (Display printing). Using `%A` is a quick way to avoid having to specify `%i` (int), `%s` (string) etc. when printing.
+
+The same in Rust (well, almost the same) would look like this:
+
+```
+fn add_one(x: i32) -> i32 {
+    x + 1
+}
+
+fn times_two(x: i32) -> i32 {
+    x * 2
+}
+
+fn print_it<T: std::fmt::Debug>(x: T) {
+    println!("{:?}", x)
+}
+
+fn main() {
+    print_it(times_two(add_one(8)));
+}
+```
+
+Here we're putting them inside successive parentheses to accomplish the same thing. The `T: std::fmt::Debug` is generic and is saying "I guarantee to give you something that can be Debug printed" to the compiler.
+
+If you wanted a more left to right syntax like in F#, you would want to create structs with methods that can do this and it probably wouldn't be worth it. However, you do see this sort of syntax a lot with iterators, which are made to be passed on from left to right. Working with iterators is probably where Rust's syntax gets most 'pipeliney'. For example, let's take ten numbers from 0 to 10, multiply each by two, keep only the even numbers, and then collect it into a `Vec`. It looks like this:
+
+```
+fn main() {
+    let times_two_then_even: Vec<i32> = (0..=10)
+        .map(|number| number * 2)
+        .filter(|number| number % 2 == 0)
+        .collect();
+
+    println!("{:?}", times_two_then_even);
+}
+```
+
+Printing that gives us `[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]`.
+
+The F# version is very similar:
+
+
+```
+let timesTwoThenEven =
+    [0..10]
+    |> List.map (fun number -> number * 2)
+    |> List.filter (fun number -> number % 2 = 0)
+
+printfn "%A" timesTwoThenEven
+```
+
+Here's the output: `[0; 2; 4; 6; 8; 10; 12; 14; 16; 18; 20]`
+
+Notice the difference between the two: both use closures/anonymous functions to perform the work, but the signature is:
+
+Rust: |variable_name_here| variable_name_here * 2
+
+F#: (fun variable_name_here -> variable_name_here * 2)
+
+In Rust, `||` is for closures and `()` for regular functions, while in F# regular functions don't have a particular syntax and closures have `fun` in front of them.
+
+In both cases you are giving a name to the input in order to tell it what to do in the next stage.
