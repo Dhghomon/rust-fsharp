@@ -310,6 +310,20 @@ let oneLeft = twoLeft 9
 printfn "%i" (oneLeft 10)
 ```
 
+Interesting fact: all functions in F# are curried, which is why they have this interesting signature:
+
+```
+val addThree : a:int -> b:int -> c:int -> int
+```
+
+When you pass in three numbers to the function, it will curry the function with one input parameter at a time, passing it on until all three have a value and then finally return an `int`. (I may have explained this oddly or wrongly - let me know if so)
+
+In Rust, the function would look like this:
+
+```
+fn add_three(a: i32, b: i32, c: i32) -> i32
+```
+
 Note that the spaces between inputs isn't just F# trying to be cool and minimalistic: it's the currying syntax. If you don't want a function to be curried, put the inputs inside of a tuple:
 
 ```
@@ -408,6 +422,80 @@ F#: (fun variable_name_here -> variable_name_here * 2)
 In Rust, `||` is for closures and `()` for regular functions, while in F# regular functions don't have a particular syntax and closures have `fun` in front of them.
 
 In both cases you are giving a name to the input in order to tell it what to do in the next stage.
+
+There is a big difference between Rust and F# here: Rust has something known as "zero-cost abstractions", which essentially means that there is no performance impact for fancy code compared to simple `for` loops and such things. Let's look at `times_two_then_even` in Rust again:
+
+```
+    let times_two_then_even: Vec<i32> = (0..=10)
+        .map(|number| number * 2)
+        .filter(|number| number % 2 == 0)
+        .collect();
+```
+
+This gives a `Vec<i32>` because of the `.collect()` method at the end. Let's see what happens when we take it out and don't assign it to a variable:
+
+```
+fn main() {
+    (0..=10)
+        .map(|number| number * 2)
+        .filter(|number| number % 2 == 0);
+}
+```
+
+It compiles, but tells us that we actually haven't done anything:
+
+```
+warning: unused `Filter` that must be used
+ --> src/main.rs:2:5
+  |
+2 | /     (0..=10)
+3 | |         .map(|number| number * 2)
+4 | |         .filter(|number| number % 2 == 0);
+  | |__________________________________________^
+  |
+  = note: `#[warn(unused_must_use)]` on by default
+  = note: iterators are lazy and do nothing unless consumed
+```
+
+This is because calling these iterator methods without collecting them or assigning them to a variable just makes a big complex type; we haven't mapped or filtered anything yet. Let's see what it looks like by getting the compiler mad:
+
+```
+fn main() {
+    let times_two_then_even: i32 = (0..=10) // Tell the compiler it's an i32
+        .map(|number| number * 2)
+        .filter(|number| number % 2 == 0);
+}
+```
+
+The compiler complains:
+
+```
+expected type `i32`
+           found struct `Filter<Map<RangeInclusive<{integer}>, [closure@src/main.rs:3:14: 3:33]>, [closure@src/main.rs:4:17: 4:41]>`
+```
+
+So all we've done is put together a type Filter<Map<RangeInclusive etc. etc. etc. And if we call .map a whole bunch of times it just keeps on putting this big struct together:
+
+```
+found struct `Map<Map<Map<Map<Map<Map<Map<Map<RangeInclusive<{integer}>, [closure@src/main.rs:3:14: 3:33]>, [closure@src/main.rs:4:14: 4:33]>, [closure@src/main.rs:5:14: 5:33]>, [closure@src/main.rs:6:14: 6:33]>, [closure@src/main.rs:7:14: 7:33]>, [closure@src/main.rs:8:14: 8:33]>, [closure@src/main.rs:9:14: 9:33]>, [closure@src/main.rs:10:14: 10:33]>`
+```
+
+This struct is all ready to go, and gets run *once* when we actually decide to do something with it (like collect it into a `Vec`). The pipeline operator in F#, however, gets run every time you use it: if you do something like this:
+
+```
+let addOne x = x + 1;
+
+let number  = 
+    addOne 9
+    |> addOne
+    |> addOne
+    |> addOne
+    |> addOne
+    |> addOne
+    |> addOne
+```
+
+It's going to call `addOne` every time, and same for F#'s iterator methods. Apparently too much usage of the pipeline operator can slow down performance, though F# is performant enough. (Somewhat less that C#, miles faster than something like Python) Rust is naturally right up there with C and C++ in terms of performance.
 
 F# also has a right to left pipeline operator: `<|`. Users of F# caution against using it too much, and say it should only be used sparingly when it makes code readable. Using both results in some pretty wacky syntax:
 
@@ -605,7 +693,7 @@ fn main() {
 
 Much better! One note here: the semicolon is necessary because Rust is an expression-based language too. Rust also treats the final line of an expression as the return value, but we are not looking to pass on a `Diplomat` to something else so we need a semicolon at the end to make it return a unit type instead.
 
-The F# user is now going to be wondering what this `.to_string()` method is doing and why we need it in Rust. This is because Rust has more than one `String` type, and this is the simplest one to understand in a struct: it's similar to the F# string type mentioned above in that it is an owned collection, though in this case it's a collection of `u8` bytes. (We saw the signature above already) Without the `.to_string()` method, we are instead dealing with a "&str", which is a borrowed reference - the type does not own it. It is essentially a view into a string. And 
+The F# user is now going to be wondering what this `.to_string()` method is doing and why we need it in Rust. This is because Rust has more than one `String` type, and this is the simplest one to understand in a struct: it's similar to the F# string type mentioned above in that it is an owned collection, though in this case it's a collection of `u8` bytes. (We saw the signature above already) Without the `.to_string()` method, we are instead dealing with a "&str", which is a borrowed reference - the type does not own it. It is essentially an immutable view into a string. And because it doesn't own it, the compiler will complain at this sort of signature:
 
 ```
 struct Diplomat {
@@ -615,8 +703,34 @@ struct Diplomat {
 
 fn main() {
     let diplomat1 = Diplomat {
-        name: "Quintus Aurelius".to_string(),
-        message: "We demand concessions!".to_string(),
+        name: "Quintus Aurelius",
+        message: "We demand concessions!",
     };
 }
 ```
+
+Because here `Diplomat` doesn't own the data, there's a possibility that you might pass in data that starts out owned by another object, which later on is dropped and deallocated, and now you have a reference to data that doesn't exist. The compiler will tell you to give it a hint about how long the data will live:
+
+```
+error[E0106]: missing lifetime specifier
+ --> src/main.rs:2:11
+  |
+2 |     name: &str,
+  |           ^ expected named lifetime parameter
+  |
+help: consider introducing a named lifetime parameter
+  |
+1 | struct Diplomat<'a> {
+2 |     name: &'a str,
+  |
+ ```
+ 
+As it turns out, the hint it gives you is exactly what you need to get the code to compile. It says "there is a lifetime that we'll call <'a> that the Diplomat struct lives for, and I'll only pass in a &str that lives for at least that long."
+
+One note here for users of both languages: both languages use <> angle brackets to specify generics, but slightly differently:
+
+<'a>: in Rust, this is a lifetime specifier: "this object will live for at least the lifetime that we'll call 'a." 
+
+<'a>: in F#, this is a generic specifier.
+
+<T>: in Rust, this is a generic specifier.
