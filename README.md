@@ -729,8 +729,8 @@ As it turns out, the hint it gives you is exactly what you need to get the code 
 
 One note here for users of both languages: both languages use <> angle brackets to specify generics, but slightly differently:
 
-<'a>: in Rust, this is a lifetime specifier: "this object will live for at least the lifetime that we'll call 'a." 
+`<'a>`: in Rust, this is a lifetime specifier: "this object will live for at least the lifetime that we'll call 'a." 
 
-<'a>: in F#, this is a generic specifier.
+`<'a>`: in F#, this is a generic specifier.
 
-<T>: in Rust, this is a generic specifier.
+`<T>`: in Rust, this is a generic specifier.
