@@ -29,7 +29,7 @@ Let's look at some primitive types:
 * Rust `i32` in F# is an `int` (.NET: `Int32`)
 * Rust `i64` in F# is an `int64` (.NET: `Int64`)
 * Rust `char` in F# is a `char` (.NET `Char`). Rust `char` is UTF-8, while in F# they are UTF-16.
-* Rust `unit` in F# is also `unit`. They both use `()` to represent it.
+* Rust `unit` in F# is also `unit`. They both use `()` to represent it. This is one of those types that is very welcome to see for a Rustacean. (Almost) everything is an expression!
 * Rust `String` in F# is `string`. The F# documentation calls it "a sequential collection of characters that's used to represent text. A String object is a sequential collection of System.Char objects that represent a string", so that makes it very different from Rust's `&str` (a string slice) and much more like String, which is defined as:
 
 ```
@@ -58,3 +58,93 @@ Because strings are immutable, string manipulation routines that perform repeate
 
 So in that case it's very different from a `Vec<char>`, which can simply append a `char` and only needs to reallocate once it surpasses its capacity (which is done automatically).
 
+# Match
+
+Both Rust and F# use the keyword `match`. Using `match` is pretty similar, but there are some differences. Here's the first one:
+
+If you don't include all cases or use `_` to match all other remaining cases, Rust will fail to compiler. F# will compile, but it will give you a warning.
+
+Rust:
+
+```
+enum Mood {
+    Good,
+    Okay,
+    Bad
+}
+
+fn check_mood(mood: Mood) {
+    match mood {
+        Mood::Good => println!("Feeling good"),
+        Mood::Bad => println!("Not so good")
+    }
+}
+```
+
+Rust will generate the following:
+
+```
+error[E0004]: non-exhaustive patterns: `Okay` not covered
+```
+
+In F# you might see something like this:
+
+```
+type Mood = | Good | Okay | Bad
+
+let myMood = Good
+
+let matchMood = match myMood with
+    | Good -> printfn "Feeling good"
+    | Bad -> printfn "Not so good"
+```
+
+It compiles, but the moment this is written you see the following below: `Incomplete pattern matches on this expression. For example, the value 'Okay' may indicate a case not covered by the pattern(s).`
+
+Also note that syntax in F# will tend to vary depending on how you want the code to look. The following does the same:
+
+```
+type Mood =
+    | Good 
+    | Okay 
+    | Bad
+
+let myMood: Mood = Good
+
+let matchMood = 
+    match myMood with
+        | Good -> printfn "Feeling good"
+        | Bad -> printfn "Not so good"
+```
+
+Note that this time we specified the type: `let myMood: Mood = Good`. The F# compiler will also use type inference on the inside of a type to try to determine what it is; Rust will not do that. So if you write a second enum with all the same fields:
+
+```
+type Mood = | Good | Okay | Bad
+
+type Mood2 = | Good | Okay | Bad
+
+let myMood = Good
+
+let matchMood = 
+    match myMood with
+        | Good -> printfn "Feeling good"
+        | Bad -> printfn "Not so good"
+```
+
+It will make `myMood` of type `Mood2` (it is basically shadowing `Mood`). Watch out! And this happens even if a single field is the same and/or in a different order:
+
+```
+type Mood = | Good | Okay | Bad
+
+type Mood2 = | Bad | Good
+
+let myMood = Good
+
+let matchMood = 
+    match myMood with
+        | Good -> printfn "Feeling good"
+        | Bad -> printfn "Not so good"
+```
+
+Here as well `myMood` is a `Mood2`. Rustaceans will be in the habit of writing `let myMood: Mood` in any case, but keep in mind that the F# compiler will not do your work for you if you give multiple types the same field names and don't declare their types when making a let binding.
