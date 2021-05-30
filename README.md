@@ -8,7 +8,7 @@ I will be adding to this whenever an idea strikes me, but note that I am still v
 
 That's enough for an intro. Let's start!
 
-# Primitive types in both languages
+# Primitive types
 
 Both Rust and F# have a compiler that uses type inference. They also both use `let` bindings. So if you write the following:
 
@@ -57,6 +57,126 @@ Because strings are immutable, string manipulation routines that perform repeate
 ```
 
 So in that case it's very different from a `Vec<char>`, which can simply append a `char` and only needs to reallocate once it surpasses its capacity (which is done automatically).
+
+## Casting to other types
+
+In Rust you use `as` to cast one primitive type into another:
+
+```
+fn print_isize(number: isize) { // This will only take an isize
+    println!("{}", number);
+}
+
+fn main() {
+    let x: i8 = 9;
+    print_isize(x as isize); // so we cast it into one with as
+}
+```
+
+In F# you write the name of the type to cast into before the name of the 'variable'. Let's say we have a function that insists on taking a `byte` type:
+
+```
+let printByte (number: byte) =
+    printfn "%i" number
+```
+
+(For Rust users: the `%i` means to print out something that is an integer. If you change it to `%s` (string) for example it will not compile)
+
+Then if we have a number that we simply declare to be 9, F# will make it an `int` (an `i32` in Rust) and you will need to cast it as `byte`.
+
+```
+let printByte (number: byte) =
+    printfn "%i" number
+
+let number = 9
+printByte (byte number)
+```
+
+Note the difference between the two: for F# we had to outright specify that the function will only take a `byte` for it not to compile; otherwise it will adapt the type of the function to the input it gets. Rust is stricter and requires generics to take in various types. (F# has generics too - more on the differences between the two in that section)
+
+However, F# is not all loosey-goosey when it comes to function inputs. For example:
+
+```
+let printNumber number =
+    printfn "%i" number
+
+let number = 9
+printNumber number
+```
+
+Here, the compiler will know from `%i` and the let binding on `number` that it's taking in an int, and the function signature will be `number:int -> unit`. But if you add the following:
+
+```
+let printNumber number =
+    printfn "%i" number
+
+let number = 9
+printNumber number // Give an int
+printNumber (byte number) // Then give a byte
+```
+
+This time it will refuse to compile, because it has determined that it needs an `int` and now we've told it to also take a `byte` type as well. The former input has set the variable input type in stone and it duly refuses:
+
+```
+This expression was expected to have type
+    'byte'    
+but here has type
+    'int'   
+```
+
+On that note, let's compare compiler messages for the same issue. Let's make a function that takes an `int` in F# and `i32` in Rust, but receives a `byte` in F# (a `u8`) in Rust and see what it says.
+
+F#:
+
+```
+let printNumber (number: int) =
+    printfn "%i" number
+
+let number = 9
+printNumber (byte number)
+```
+
+Rust:
+
+```
+fn print_i32(number: i32) {
+    println!("{}", number);
+}
+
+fn main() {
+    let x: u8 = 9;
+    print_i32(x);
+}
+```
+
+The messages are:
+
+F#
+
+```
+This expression was expected to have type
+    'byte'    
+but here has type
+    'int'
+```
+
+Rust
+
+```
+7 |     print_i32(x);
+  |               ^
+  |               |
+  |               expected `i32`, found `u8`
+  |               help: you can convert a `u8` to an `i32`: `x.into()`
+```
+
+Notice that the messages are saying the same thing backwards.
+
+Rust: expected `i32`, found `u8` = **The function is expecting an i32, but you gave me a u8**
+
+F: This expression was expected to have type 'byte' but here has type 'int' = **Your input made me expect a byte, but the function is of type int**
+
+(The part mentioning `.into()` in the Rust message is another way to convert between types - more on that later)
 
 # Match
 
