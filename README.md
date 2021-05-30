@@ -8,6 +8,10 @@ I will be adding to this whenever an idea strikes me, but note that I am still v
 
 That's enough for an intro. Let's start!
 
+# Trying out the language without installing
+
+Both languages have nice online environments to practice without having to install anything. In Rust you use the [Rust Playground](https://play.rust-lang.org/), while F# uses a site called [Try F#](https://try.fsharp.org/).
+
 # Primitive types
 
 Both Rust and F# have a compiler that uses type inference. They also both use `let` bindings. So if you write the following:
@@ -28,6 +32,8 @@ Let's look at some primitive types:
 * Rust `i16` in F# is an `int16` (.NET: `Int16`)
 * Rust `i32` in F# is an `int` (.NET: `Int32`)
 * Rust `i64` in F# is an `int64` (.NET: `Int64`)
+* Rust `usize` in F# is `unativeint` (.NET: `UIntPtr`)
+* Rust `isize` in F# is `nativeint` (.NET: `IntPtr`)
 * Rust `char` in F# is a `char` (.NET `Char`). Rust `char` is UTF-8, while in F# they are UTF-16.
 * Rust `unit` in F# is also `unit`. They both use `()` to represent it. This is one of those types that is very welcome to see for a Rustacean. (Almost) everything is an expression!
 * Rust `String` in F# is `string`. The F# documentation calls it "a sequential collection of characters that's used to represent text. A String object is a sequential collection of System.Char objects that represent a string", so that makes it very different from Rust's `&str` (a string slice) and much more like String, which is defined as:
@@ -723,7 +729,7 @@ help: consider introducing a named lifetime parameter
 1 | struct Diplomat<'a> {
 2 |     name: &'a str,
   |
- ```
+```
  
 As it turns out, the hint it gives you is exactly what you need to get the code to compile. It says "there is a lifetime that we'll call <'a> that the Diplomat struct lives for, and I'll only pass in a &str that lives for at least that long."
 
@@ -734,3 +740,92 @@ One note here for users of both languages: both languages use <> angle brackets 
 `<'a>`: in F#, this is a generic specifier.
 
 `<T>`: in Rust, this is a generic specifier.
+
+In short, stick with `String` in the beginning with Rust until you get used to lifetimes. A `&str` is more performant than a `String`, but is less flexible.
+
+So back to the struct. How does Rust add methods? It uses what is known as an `impl` block. These are separate from the struct declaration, and you can use as many of them as you like. Inside the `impl` block you add your methods. You have four choices with methods:
+
+- Methods that take `Self` (the equivalent of F# `this`): these take ownership of the struct's data! The struct will then only live until the end of the function. These methods are usually used with the builder pattern, by bringing in the object, making one change and then returning `Self` back to the struct. This is a bit F-sharpy since it allows you to chain one method to another. Let's take a look at this in detail. Here's a regular struct called `City`:
+
+```
+struct City {
+    name: String,
+    population: i32
+}
+```
+
+Now we'll give it some methods. Start an `impl` block: 
+
+```
+impl City {
+
+}
+```
+
+Then add some methods. First a new method. Note: `new` isn't a keyword in Rust - we could call this `neu` or `nouveau` or anything else.
+
+```
+fn new() -> Self { // Can also write City
+    Self {
+        name: "".to_string(),
+        population: 0
+    }
+}
+```
+
+Because this method doesn't take `self` (or `&self` or `&mut self`), it's called an associated method and is called like this: `City::new()`. That's because there is no instance of `City` to use the dot operator on.
+
+So that will make a new city with no name and a population of 0. Now let's add two methods that take self and return it after making a change:
+
+```
+fn population(mut self, population: i32) -> Self {
+    self.population = population;
+    self
+}
+
+fn name(mut self, name: &str) -> Self {
+    self.name = name.to_string();
+    self
+}
+```
+
+(Note: no problem taking a `&str` here because we don't care about using it after the function is over. Nobody cares about the lifetime in this case, and it is turned into a `String` which is owned by the struct)
+
+And with all that, we can now set up a city using this F#-like pattern:
+
+```
+fn main() {
+    let city = City::new().population(100).name("My city");
+}
+```
+
+Usually a `new` method will look more like this though:
+
+```
+fn new(population: i32, name: &str) -> Self {
+    Self {
+        population,
+        name: name.to_string()
+    }
+}
+```
+
+Why didn't we write `population: population`? We could have, but if the two names are the same, we can just write `population`.
+
+# Mutability
+
+Both Rust and F# use let bindings for variables that are immutable by default. To make something mutable in Rust, add the `mut` keyword. F# requires a longer keyword: `mutable`. This fits with the F# philosophy of trying to avoid mutability as much as possible. In Rust immutability is just a common sense default - why make something mutable unless you need to change it?
+
+Changing a mutable variable in Rust involves just `=` and the new value. Note that we're not using the `let` keyword here! Using `let` again would create a new variable that shadows the previous one. Using `=` naturally does not let you change the type of whatever it is we are modifying.
+
+```
+let mut x = 7;
+x = 8;
+```
+
+In F#, changing the value of a mutable variable is done with the `<-` operator.
+
+```
+let mutable x = 7
+x <- 8
+```
