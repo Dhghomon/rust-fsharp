@@ -408,3 +408,215 @@ F#: (fun variable_name_here -> variable_name_here * 2)
 In Rust, `||` is for closures and `()` for regular functions, while in F# regular functions don't have a particular syntax and closures have `fun` in front of them.
 
 In both cases you are giving a name to the input in order to tell it what to do in the next stage.
+
+F# also has a right to left pipeline operator: `<|`. Users of F# caution against using it too much, and say it should only be used sparingly when it makes code readable. Using both results in some pretty wacky syntax:
+
+```
+let printTwo x y = printfn "%i and %i" x y
+
+8 |> printTwo <| 9
+```
+
+The compiler is perfectly happy with this, printing out `8 and 9`. But there's no reason to write it this way over the simpler `printTwo 8 9`.
+
+Although even that syntax could be interesting once in a while. Here's one example:
+
+```
+type Diplomat = {
+    name: string
+    message: string
+}
+
+let diplomat1 = {name = "Quintus Aurelius"; message = "We demand concessions!"}
+let diplomat2 = {name = "Argentyx"; message = "We would rather die!"}
+
+let meeting person1 person2 =
+    printfn "%s says: %s" person1.name person1.message
+    printfn "%s responds: %s" person2.name person2.message
+
+diplomat1 |> meeting <| diplomat2
+```
+
+Kind of looks nice to see our two diplomats approaching each other in the middle with `diplomat1 |> meeting <| diplomat2` rather than a boring old `meeting diplomat1 diplomat2`. The output is of course:
+
+```
+Quintus Aurelius says: We demand concessions!
+Argentyx responds: We would rather die!
+```
+
+On that note, what is that `type Diplomat` doing there? Let's look at that now.
+
+# Rust structs, F# record types and structs
+
+The main custom data type in Rust is a struct, which looks very similar to the type we just declared above. Let's look at a Rust `Diplomat` struct and the F# `Diplomat` record again:
+
+```
+struct Diplomat {
+    name: String,
+    message: String
+}
+```
+
+```
+type Diplomat = { 
+    name: string
+    message: string 
+    }
+```
+
+Note that the fields in Rust are separated with commas, and a new line in F#. In F# you can also use semicolons if you want the fields on the same line:
+
+```type Diplomat = { name: string; message: string }```
+
+Rust users will also have noticed that we didn't even say we were creating a `Diplomat` when we instantiated them. All we wrote was this:
+
+```
+let diplomat1 = {name = "Quintus Aurelius"; message = "We demand concessions!"}
+```
+
+This is once again an example of the F# compiler looking at the fields of a type to infer the type. The inference doesn't go *that* deep though. For example, if we make a separate Diplomat2 type:
+
+```
+type Diplomat = { name: string; message: string }
+type Diplomat2 = { name: string; message: string }
+```
+
+Then the `meeting` function will assume that it's taking a `Diplomat2` because it shadows the previous one:
+
+```
+let meeting person1 person2 =
+    printfn "%s says: %s" person1.name person1.message
+    printfn "%s responds: %s" person2.name person2.message
+```
+
+But even declaring this type will cause it to err!
+
+```
+type Diplomat = { name: string; message: string }
+type MessagelessDiplomat = { name: string }
+```
+
+Here too the compiler assumes that the function will take a `MessagelessDiplomat`, and because it doesn't have a `message` field it will give an error. A Rustacean in any case will certainly feel more comfortable declaring function with this sort of syntax:
+
+```
+let meeting (person1: Diplomat) (person2: Diplomat) =
+    printfn "%s says: %s" person1.name person1.message
+    printfn "%s responds: %s" person2.name person2.message
+```
+
+You can also declare anonymous record types in F# by adding `||`:
+
+```
+let diplomat1 = {|
+    name = "Marcus Aurelius"
+    message = "The Emperor demands tribute."
+    |}
+
+printfn "%s says: %s" diplomat1.name diplomat1.message
+```
+
+If you want to add methods to a record, you use `with` and then the `member`keyword, followed by `this` and the method you want to write. This is fairly different from Rust, but once the boilerplate is done it is quite similar.
+
+```
+type Diplomat = {
+    name: string
+    message: string
+}
+with
+    member this.Talk() = 
+        printfn "%s says: %s" this.name this.message
+```
+
+Now our diplomatic summit turns into this:
+
+```
+type Diplomat = {
+    name: string
+    message: string
+}
+with
+    member this.Talk() = 
+        printfn "%s says: %s" this.name this.message
+
+
+let meeting (person1: Diplomat) (person2: Diplomat) =
+    person1.Talk()
+    person2.Talk()
+
+let diplomat1 = {name = "Quintus Aurelius"; message = "We demand concessions!"}
+let diplomat2 = {name = "Argentyx"; message = "We would rather die!"}
+
+diplomat1 |> meeting <| diplomat2
+```
+
+
+Now let's look at Rust structs in comparison. Let's look at the Diplomat struct again:
+
+```
+struct Diplomat {
+    name: String,
+    message: String
+}
+```
+
+To declare one, you need to specify that you are creating a `Diplomat` - the Rust compiler doesn't root through the fields to try to determine the type for you. Also don't forget the semicolon. If you do this it won't work:
+
+```
+struct Diplomat {
+    name: String,
+    message: String
+}
+
+fn main() {
+    let diplomat1 = Diplomat{
+    name: "Quintus Aurelius".to_string(), message: "We demand concessions!".to_string()
+        
+    }
+}
+```
+
+Fortunately, the Rust compiler generally knows what you are trying to do. Here's the message:
+
+```
+error: expected `;`, found `}`
+  --> src/main.rs:10:6
+   |
+10 |     }
+   |      ^ help: add `;` here
+11 | }
+   | - unexpected token
+```
+
+That was nice of it. Also note that the formatting above is a bit lazy. Let's type `cargo fmt` (or hit the Rustfmt button on the Playground) to make it nice.
+
+```
+struct Diplomat {
+    name: String,
+    message: String,
+}
+
+fn main() {
+    let diplomat1 = Diplomat {
+        name: "Quintus Aurelius".to_string(),
+        message: "We demand concessions!".to_string(),
+    };
+}
+```
+
+Much better! One note here: the semicolon is necessary because Rust is an expression-based language too. Rust also treats the final line of an expression as the return value, but we are not looking to pass on a `Diplomat` to something else so we need a semicolon at the end to make it return a unit type instead.
+
+The F# user is now going to be wondering what this `.to_string()` method is doing and why we need it in Rust. This is because Rust has more than one `String` type, and this is the simplest one to understand in a struct: it's similar to the F# string type mentioned above in that it is an owned collection, though in this case it's a collection of `u8` bytes. (We saw the signature above already) Without the `.to_string()` method, we are instead dealing with a "&str", which is a borrowed reference - the type does not own it. It is essentially a view into a string. And 
+
+```
+struct Diplomat {
+    name: &str,
+    message: &str,
+}
+
+fn main() {
+    let diplomat1 = Diplomat {
+        name: "Quintus Aurelius".to_string(),
+        message: "We demand concessions!".to_string(),
+    };
+}
+```
