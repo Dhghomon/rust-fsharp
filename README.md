@@ -973,12 +973,74 @@ let billy = {
 
 It will generate an error if you move it down below our `let billy` declaration. And not only this: the order of files in an F# program matters too! If you have multiple files, be sure to order them accordingly. This is in accordance with the F# "data in data out" sort of principle that likes to see everything done in order.
 
+Besides named structs, Rust also has tuple structs. They are generally used for two things:
+
+- Simple structs that don't need named fields.
+
+```
+struct RGB(u8, u8, u8);
+
+fn main() {
+    let my_colour = RGB(80, 65, 0);
+}
+```
+
+- New types. While type aliases can be declared with the `type` keyword:
+
+```
+type VecOfInts = Vec<i32>;
+
+fn main() {
+    let some_vec: VecOfInts = vec![8, 9, 10];
+}
+```
+     
+this type is 100% equivalent to `Vec<i32>` and the compiler reads it as such. But a struct containing another type works as a new type, and while it does have access to the type's methods by calling on it (using `.0`), it is effectively a new type and that lets you implement other traits on it.
+     
+So this will no longer work:
+
+```
+struct VecOfInts(Vec<i32>);
+
+fn main() {
+    let some_vec: VecOfInts = vec![8, 9, 10];
+}
+```
+     
+But this will:
+     
+```
+struct VecOfInts(Vec<i32>);
+
+fn main() {
+    let some_vec = VecOfInts(vec![8, 9, 10]);
+}
+```
+
+And since `VecOfInts` is its own type, this won't work yet:
+     
+```
+println!("{:?}", some_vec);
+```
+     
+But this will:
+
+```
+println!("{:?}", some_vec.0);
+```
+     
+The ears of Fsharpers will have perked up at this already, because F# uses these sorts of new types **a lot** and loves declaring them on the fly for type safety and readability.
+     
+
+     
 # Collection types
 
 Here is a quick overview of the collection types in both languages:
 
 **MAIN TYPES**
 
-Rust: Vec, array
+Rust: Vec, array, tuples
 
-F#: list, array, sequence
+F#: list, array, sequence, tuples
+
+
