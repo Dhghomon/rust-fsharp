@@ -275,9 +275,45 @@ let matchMood =
 
 Here as well `myMood` is a `Mood2`. Rustaceans will be in the habit of writing `let myMood: Mood` in any case, but keep in mind that the F# compiler will not do your work for you if you give multiple types the same field names and don't declare their types when making a let binding.
 
+Interestingly, F# also has a `function` keyword that is basically short for `match (name) with`.
+
+```
+type Options = 
+    | Sunny
+    | Rainy
+    | Other
+
+let message = function
+    | Sunny -> printfn "It's sunny today"
+    | Rainy -> printfn "It's rainy"
+    | Other -> printfn "Not sure what the weather is."
+
+message Sunny
+```
+
+This will print out "It's sunny today".
+
+Over on the [F# documentation](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/match-expressions) you can see an example of both:
+
+```
+// Pattern matching with multiple alternatives on the same line.
+let filter123 x =
+    match x with
+    | 1 | 2 | 3 -> printfn "Found 1, 2, or 3!"
+    | a -> printfn "%d" a
+
+// The same function written with the pattern matching
+// function syntax.
+let filterNumbers =
+    function | 1 | 2 | 3 -> printfn "Found 1, 2, or 3!"
+             | a -> printfn "%d" a
+```
+
+
+
 # Currying
 
-Currying doesn't exist in Rust, while F# uses it all the time. Currying means to have a function that takes multiple parameters, but is fine with just taking in one or a few instead of all of them at the same time. For the Rustaceans, it's sort of like this...
+Currying doesn't exist in Rust, while F# uses it all the time. Currying means to have a function that takes multiple parameters, but is fine with just taking in one or a few instead of all of them at the same time. For Rustaceans, it would be sort of like this...
 
 ```
 fn add_three(num_one: i32, num_two: i32, num_three: i32) {
@@ -560,7 +596,9 @@ type Diplomat = {
 
 Note that the fields in Rust are separated with commas, and a new line in F#. In F# you can also use semicolons if you want the fields on the same line:
 
-```type Diplomat = { name: string; message: string }```
+```
+type Diplomat = { name: string; message: string }
+```
 
 Rust users will also have noticed that we didn't even say we were creating a `Diplomat` when we instantiated them. All we wrote was this:
 
@@ -811,6 +849,41 @@ fn new(population: i32, name: &str) -> Self {
 ```
 
 Why didn't we write `population: population`? We could have, but if the two names are the same, we can just write `population`.
+
+Now that the Fsharpiest part is out of the way, here is what is more commonly passed into methods: `&self` and `&mut self`. `&self` is a reference to self (you can read but not modify it) while `&mut self` is a mutable reference to self (you can modify it). As you can imagine, there are rules regarding references to avoid unexpected behaviour.
+
+1) You can have as many references as you like if they are not mutable references.
+2) You can have up to one mutable reference.
+3) If you have a mutable reference, everything else is essentially frozen: nobody else can have a mutable or immutable reference as long as the mutable reference is still around.
+
+Here is a quick example of code that doesn't compile:
+
+```
+fn main() {
+    let mut my_string = "I am a string".to_string();
+    let x = &my_string;
+    let y = &mut my_string;
+    
+    println!("{}", x);
+}
+```
+
+Once you declare x as a reference to `my_string`, it is expecting a `String` that says "I am a string". However, in the next line comes `y` which is able to modify the data that `x` has a reference to, and is going to try to print out two lines later. This is not okay, and the compiler tells us as much:
+
+```
+error[E0502]: cannot borrow `my_string` as mutable because it is also borrowed as immutable
+ --> src/main.rs:4:13
+  |
+3 |     let x = &my_string;
+  |             ---------- immutable borrow occurs here
+4 |     let y = &mut my_string;
+  |             ^^^^^^^^^^^^^^ mutable borrow occurs here
+5 |     
+6 |     println!("{}", x);
+  |                    - immutable borrow later used here
+```
+
+Note the part that says "immutable borrow later used here", because the compiler is smart enough to track not just the creation of references, but whether they are being used or not. If we were to comment out line 6 it would compile, because even though we created references that both live until the end of the scope, the compiler can see that they never get used and it will not make an issue out of it. (Some years back the compiler wasn't capable of this and would always generate errors on the *existence* of such references instead of being able to track their actual use)
 
 # Mutability
 
