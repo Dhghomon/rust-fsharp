@@ -192,6 +192,94 @@ F: This expression was expected to have type 'byte' but here has type 'int' = **
 
 (The part mentioning `.into()` in the Rust message is another way to convert between types - more on that later)
 
+## The inline keyword in F#
+
+(Thanks to [isaacabraham](https://github.com/Dhghomon/rust-fsharp/issues/1) for this)
+
+If we could like the printNumber function to work for more than just one type, there is a way to make it generic: the `inline` keyword. Rust also has an `inline` keyword but it's an attribute [used for greater performance](https://nnethercote.github.io/perf-book/inlining.html) in certain cases.
+
+One quick note: both languages use attributes in a similar form:
+
+#[attribute_name] Rust attribute
+[<AttributeName>] F# attribute
+
+So back to `inline`: in F# they are used for generics. Taking a look at the [documentation](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/functions/inline-functions), this will look familiar:
+
+```
+Inline functions are functions that are integrated directly into the calling code.
+
+Using Inline Functions
+When you use static type parameters, any functions that are parameterized by type parameters must be inline. This guarantees that the compiler can resolve these type parameters. When you use ordinary generic type parameters, there is no such restriction.
+     
+The presence of inline affects type inference. This is because inline functions can have statically resolved type parameters, whereas non-inline functions cannot.
+```
+     
+Ah! So it's similar to Rust's static dispatch / monomorphization (monomorphization = making it have a single form): namely, where you write code that tells the compiler to take a certain generic type, which is then statically dispatched during compile time into a concrete type. Let's look at Rust generics for a moment to see how this works.
+     
+```rust
+use std::fmt::Display;
+
+fn print_thing<T: Display>(input: T) {
+    println!("{}", input);
+}
+
+fn main() {
+    print_thing(8);
+    print_thing('a');
+    print_thing("Hiya there.");
+}
+```
+     
+[std::fmt::Display](https://doc.rust-lang.org/std/fmt/trait.Display.html) is a trait that lets you use `{}` to print a type, and is used for more human-readable displays. When implementing it yourself, you have to write the function to instruct how it will be displayed. (Debug on the other hand is easy to implement with just an attribute and gives an informative yet less pretty output)
+     
+So then we have `fn print_thing` that takes a generic type `T`, which we say to the compiler will have the `Display` trait. All of Rust's primitive types have Display. Now that we've told it that, the compiler is happy with us saying `println!` with `{}` because it knows a type with `Display` will be shown here. Then we use it on three types: an `i32`, a `char`, and a `&str`.
+     
+Then the program is compiled, and the static dispatch / monomorphization happens. The compiler puts together three functions with concrete types, and there's no evaluation happening at runtime. It ends up with something like this instead:
+
+```rust
+fn print_thing_i32(input: i32) {
+    println!("{}", input);
+}
+     
+fn print_thing_char(input: char) {
+    println!("{}", input);
+}
+     
+fn print_thing_str(input: &str) {
+    println!("{}", input);
+}
+```
+     
+So it looks like the `inline` keyword is doing the same thing in F#. Before the `inline` keyword, we had this:
+
+```fs
+printNumber : number: int -> unit
+     
+let printNumber number =
+    printfn "%i" number
+
+let number = 9
+printNumber number
+printNumber (byte number)
+```
+
+Hovering over `printNumber` shows that it is: `printNumber : number: int -> unit`. But if we put the `inline` keyword in:
+     
+```fs
+let inline printNumber number =
+    printfn "%i" number
+
+let number = 9
+printNumber number
+printNumber (byte number)
+```
+     
+Now it changes to this:
+     
+```val printNumber : number:'a -> unit (requires 'a : (byte|int16|int32|int64|sbyte|uint16|uint32|uint64|nativeint|unativeint))```
+     
+So it looks like a generic function that will work for anything that requires the `+` operator on an int, and the inline keyword seems to have the compiler perform monomorphization to change `printNumber number` into a function that takes an `int16`, and for `printNumber (byte number)` into a function that takes a `byte`.
+
 # Match
 
 Both Rust and F# use the keyword `match`. Using `match` is pretty similar, but there are some differences. Here's the first one:
