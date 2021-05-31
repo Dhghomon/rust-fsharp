@@ -1,10 +1,18 @@
+# Rust for Fsharpers and F# for Rustaceans
+
+<img src="RF.png"
+     width="50%" height="50%"
+     style="float: left; margin-right: 10px;" />
+
 # What's this repository for?
 
 [Rust is my first language](https://github.com/Dhghomon/programming_at_40/blob/master/README.md), and recently I've begun delving into languages in the Rust periphery, one of which is F# (since the Rust compiler was originally written in OCaml and it incorporates a good deal of its syntax).
 
-Almost every F# manual is written for C# developers in mind. That's fine, but I have no real familiarity with C#. And when I look at F# in practice I see Rust everywhere: Options, Results, match statements, iterators, and so on and so forth. An F# guide that's readable for Rustaceans that also serves as a Rust guide for F# users seems to be a necessity. So let's put one together.
+Almost every F# manual is written for C# developers in mind. That's fine, but I have no real familiarity with C#. And when I look at F# in practice I see Rust everywhere: Options, Results, match statements, iterators, and so on and so forth. Reading a book on F# with references to C# everywhere for a Rustacean is kind of like a German being forced to learn Dutch through Portuguese. And for an Fsharper, reading a beginner's book on Rust that assumes the user doesn't know about Option, match statements and the rest is too much filler to be enjoyable to read. 
 
-I will be adding to this whenever an idea strikes me, but note that I am still very weak at F# and would appreciate PRs for anything I get wrong or haven't explained sufficiently.
+With so much in common, an F# guide that's readable for Rustaceans that also serves as a Rust guide for F# users seems to be a necessity. So let's put one together.
+
+I will be adding to this whenever an idea strikes me, but note that I am still very weak at F# and would appreciate comments or PRs for anything I get wrong or haven't explained sufficiently.
 
 That's enough for an intro. Let's start!
 
