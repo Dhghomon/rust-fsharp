@@ -410,7 +410,7 @@ let printIt x = printfn "%A" x
 
 So here you see three functions, each of which does something: one adds 1, the next multiplies by two, and the last one prints it.
 
-By the way: `%A` prints the representation of an object. This is most similar to the `Debug` trait in Rust, which uses `{:?}` (for Debug printing) instead of `{}` (Display printing). Using `%A` is a quick way to avoid having to specify `%i` (int), `%s` (string) etc. when printing.
+By the way: `%A` prints tuples, record and union types. This is most similar to the `Debug` trait in Rust, which uses `{:?}` (for Debug printing) instead of `{}` (Display printing). Using `%A` is a quick way to avoid having to specify `%i` (int), `%s` (string) etc. when printing. Another specifier is %O to print other objects (this automatically uses ToString() to do it).
 
 The same in Rust (well, almost the same) would look like this:
 
@@ -546,6 +546,20 @@ let number  =
 ```
 
 It's going to call `addOne` every time, and same for F#'s iterator methods. Apparently too much usage of the pipeline operator can slow down performance, though F# is performant enough. (Somewhat less that C#, miles faster than something like Python) Rust is naturally right up there with C and C++ in terms of performance.
+
+F# also has something called the "forward composition operator" which looks like `>>`, which is a fancy way of saying that it smushes functions together into one. It's basically the same as a pipeline except all the operations are turned into a single function. Here's a simple example:
+
+```
+let addOne x = x + 1
+let timesTwo x = x * 2
+let printOut x = printfn "%i" x
+
+let addMultiplyPrint = addOne >> timesTwo >> printOut
+
+addMultiplyPrint 9
+```
+
+That prints out `20`. You can imagine it being useful from time to time, though the pipeline operator alone is clear enough and makes it easy to make small changes (like if you wanted to change `let addOne x = x + 1` to `let addNum x y = x + y`).
 
 F# also has a right to left pipeline operator: `<|`. Users of F# caution against using it too much, and say it should only be used sparingly when it makes code readable. Using both results in some pretty wacky syntax:
 
