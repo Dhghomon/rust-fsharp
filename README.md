@@ -24,7 +24,7 @@ Both languages have nice online environments to practice without having to insta
 
 Both Rust and F# have a compiler that uses type inference. They also both use `let` bindings. So if you write the following:
 
-```
+```rust
 let x = 9;
 ```
 
@@ -46,7 +46,7 @@ Let's look at some primitive types:
 * Rust `unit` in F# is also `unit`. They both use `()` to represent it. This is one of those types that is very welcome to see for a Rustacean. (Almost) everything is an expression!
 * Rust `String` in F# is `string`. The F# documentation calls it "a sequential collection of characters that's used to represent text. A String object is a sequential collection of System.Char objects that represent a string", so that makes it very different from Rust's `&str` (a string slice) and much more like String, which is defined as:
 
-```
+```rust
 pub struct String {
     vec: Vec<u8>,
 }
@@ -56,7 +56,7 @@ pub struct String {
 
 So perhaps a Rust equivalent of the F# `string` would be:
 
-```
+```rust
 pub struct String {
     vec: Vec<char>,
 }
@@ -76,7 +76,7 @@ So in that case it's very different from a `Vec<char>`, which can simply append 
 
 In Rust you use `as` to cast one primitive type into another:
 
-```
+```rust
 fn print_isize(number: isize) { // This will only take an isize
     println!("{}", number);
 }
@@ -89,7 +89,7 @@ fn main() {
 
 In F# you write the name of the type to cast into before the name of the 'variable'. Let's say we have a function that insists on taking a `byte` type:
 
-```
+```fs
 let printByte (number: byte) =
     printfn "%i" number
 ```
@@ -98,7 +98,7 @@ let printByte (number: byte) =
 
 Then if we have a number that we simply declare to be 9, F# will make it an `int` (an `i32` in Rust) and you will need to cast it as `byte`.
 
-```
+```fs
 let printByte (number: byte) =
     printfn "%i" number
 
@@ -110,7 +110,7 @@ Note the difference between the two: for F# we had to outright specify that the 
 
 However, F# is not all loosey-goosey when it comes to function inputs. For example:
 
-```
+```fs
 let printNumber number =
     printfn "%i" number
 
@@ -120,7 +120,7 @@ printNumber number
 
 Here, the compiler will know from `%i` and the let binding on `number` that it's taking in an int, and the function signature will be `number:int -> unit`. But if you add the following:
 
-```
+```fs
 let printNumber number =
     printfn "%i" number
 
@@ -142,7 +142,7 @@ On that note, let's compare compiler messages for the same issue. Let's make a f
 
 F#:
 
-```
+```fs
 let printNumber (number: int) =
     printfn "%i" number
 
@@ -152,7 +152,7 @@ printNumber (byte number)
 
 Rust:
 
-```
+```rust
 fn print_i32(number: i32) {
     println!("{}", number);
 }
@@ -200,7 +200,7 @@ If you don't include all cases or use `_` to match all other remaining cases, Ru
 
 Rust:
 
-```
+```rust
 enum Mood {
     Good,
     Okay,
@@ -223,7 +223,7 @@ error[E0004]: non-exhaustive patterns: `Okay` not covered
 
 In F# you might see something like this:
 
-```
+```fs
 type Mood = | Good | Okay | Bad
 
 let myMood = Good
@@ -237,7 +237,7 @@ It compiles, but the moment this is written you see the following below: `Incomp
 
 Also note that syntax in F# will tend to vary depending on how you want the code to look. The following does the same:
 
-```
+```fs
 type Mood =
     | Good 
     | Okay 
@@ -253,7 +253,7 @@ let matchMood =
 
 Note that this time we specified the type: `let myMood: Mood = Good`. The F# compiler will also use type inference on the inside of a type to try to determine what it is; Rust will not do that. So if you write a second enum with all the same fields:
 
-```
+```fs
 type Mood = | Good | Okay | Bad
 
 type Mood2 = | Good | Okay | Bad
@@ -268,7 +268,7 @@ let matchMood =
 
 It will make `myMood` of type `Mood2` (it is basically shadowing `Mood`). Watch out! And this happens even if a single field is the same and/or in a different order:
 
-```
+```fs
 type Mood = | Good | Okay | Bad
 
 type Mood2 = | Bad | Good
@@ -285,7 +285,7 @@ Here as well `myMood` is a `Mood2`. Rustaceans will be in the habit of writing `
 
 Interestingly, F# also has a `function` keyword that is basically short for `match (name) with`.
 
-```
+```fs
 type Options = 
     | Sunny
     | Rainy
@@ -303,7 +303,7 @@ This will print out "It's sunny today".
 
 Over on the [F# documentation](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/match-expressions) you can see an example of both:
 
-```
+```fs
 // Pattern matching with multiple alternatives on the same line.
 let filter123 x =
     match x with
@@ -323,7 +323,7 @@ let filterNumbers =
 
 Currying doesn't exist in Rust, while F# uses it all the time. Currying means to have a function that takes multiple parameters, but is fine with just taking in one or a few instead of all of them at the same time. For Rustaceans, it would be sort of like this...
 
-```
+```rust
 fn add_three(num_one: i32, num_two: i32, num_three: i32) {
     num_one + num_two + num_three
 }
@@ -331,7 +331,7 @@ fn add_three(num_one: i32, num_two: i32, num_three: i32) {
 
 except that the return type is not `i32`, it's whatever's left to make the function work. Give it a single `i32` (let's say we type `add_three(8)`) and now it will know the value of `num_one`, and then pass you back this:
 
-```
+```rust
 fn two_left(num_two: i32, num_three: i32) {
     let num_one = 8;
     num_one + num_two + num_three
@@ -342,7 +342,7 @@ fn two_left(num_two: i32, num_three: i32) {
 
 Now if you type `two_left(9, 10)` it will complete the function with output `i32` and pass back the final number: 27. But if you just give it `two_left(9)`, it will give you:
 
-```
+```rust
 fn one_left(num_three: i32) -> i32 {
     let num_one = 8;
     let num_two = 9;
@@ -352,7 +352,7 @@ fn one_left(num_three: i32) -> i32 {
 
 In F# it looks like this:
 
-```
+```fs
 let addThree a b c = a + b + c
 
 let twoLeft = addThree 8
@@ -362,7 +362,7 @@ printfn "%i" (oneLeft 10)
 
 Interesting fact: all functions in F# are curried, which is why they have this interesting signature:
 
-```
+```fs
 val addThree : a:int -> b:int -> c:int -> int
 ```
 
@@ -370,13 +370,13 @@ When you pass in three numbers to the function, it will curry the function with 
 
 In Rust, the function would look like this:
 
-```
+```rust
 fn add_three(a: i32, b: i32, c: i32) -> i32
 ```
 
 Note that the spaces between inputs isn't just F# trying to be cool and minimalistic: it's the currying syntax. If you don't want a function to be curried, put the inputs inside of a tuple:
 
-```
+```fs
 let addThree (a, b, c) = a + b + c
 
 printfn "%i" (addThree (8, 9, 10))
@@ -384,7 +384,7 @@ printfn "%i" (addThree (8, 9, 10))
 
 Fsharpers don't usually like to enclose things in brackets though (especially double brackets) and prefer to use the pipeline operator. This sort of thing might be preferable:
 
-```
+```fs
 let addThree (a, b, c) = a + b + c
 
 let finalNumber = (8, 9, 10) |> addThree
@@ -400,7 +400,7 @@ Rust doesn't use the word pipeline, nor does it have the `|>` operator. However,
 
 Because (almost) everything is an expression in F# too, pretty much everything you get will return something, even a `()` type. With `|>` you can quickly pass the return on to something else. Here's an example:
 
-```
+```fs
 let addOne x = x + 1
 let timesTwo x = x * 2
 let printIt x = printfn "%A" x
@@ -414,7 +414,7 @@ By the way: `%A` prints tuples, record and union types. This is most similar to 
 
 The same in Rust (well, almost the same) would look like this:
 
-```
+```rust
 fn add_one(x: i32) -> i32 {
     x + 1
 }
@@ -436,7 +436,7 @@ Here we're putting them inside successive parentheses to accomplish the same thi
 
 If you wanted a more left to right syntax like in F#, you would want to create structs with methods that can do this and it probably wouldn't be worth it. However, you do see this sort of syntax a lot with iterators, which are made to be passed on from left to right. Working with iterators is probably where Rust's syntax gets most 'pipeliney'. For example, let's take ten numbers from 0 to 10, multiply each by two, keep only the even numbers, and then collect it into a `Vec`. It looks like this:
 
-```
+```rust
 fn main() {
     let times_two_then_even: Vec<i32> = (0..=10)
         .map(|number| number * 2)
@@ -452,7 +452,7 @@ Printing that gives us `[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]`.
 The F# version is very similar:
 
 
-```
+```fs
 let timesTwoThenEven =
     [0..10]
     |> List.map (fun number -> number * 2)
@@ -475,7 +475,7 @@ In both cases you are giving a name to the input in order to tell it what to do 
 
 There is a big difference between Rust and F# here: Rust has something known as "zero-cost abstractions", which essentially means that there is no performance impact for fancy code compared to simple `for` loops and such things. Let's look at `times_two_then_even` in Rust again:
 
-```
+```rust
     let times_two_then_even: Vec<i32> = (0..=10)
         .map(|number| number * 2)
         .filter(|number| number % 2 == 0)
@@ -484,7 +484,7 @@ There is a big difference between Rust and F# here: Rust has something known as 
 
 This gives a `Vec<i32>` because of the `.collect()` method at the end. Let's see what happens when we take it out and don't assign it to a variable:
 
-```
+```rust
 fn main() {
     (0..=10)
         .map(|number| number * 2)
@@ -509,7 +509,7 @@ warning: unused `Filter` that must be used
 
 This is because calling these iterator methods without collecting them or assigning them to a variable just makes a big complex type; we haven't mapped or filtered anything yet. Let's see what it looks like by getting the compiler mad:
 
-```
+```rust
 fn main() {
     let times_two_then_even: i32 = (0..=10) // Tell the compiler it's an i32
         .map(|number| number * 2)
@@ -532,7 +532,7 @@ found struct `Map<Map<Map<Map<Map<Map<Map<Map<RangeInclusive<{integer}>, [closur
 
 This struct is all ready to go, and gets run *once* when we actually decide to do something with it (like collect it into a `Vec`). The pipeline operator in F#, however, gets run every time you use it: if you do something like this:
 
-```
+```fs
 let addOne x = x + 1;
 
 let number  = 
@@ -549,7 +549,7 @@ It's going to call `addOne` every time, and same for F#'s iterator methods. Appa
 
 F# also has something called the "forward composition operator" which looks like `>>`, which is a fancy way of saying that it smushes functions together into one. It's basically the same as a pipeline except all the operations are turned into a single function. Here's a simple example:
 
-```
+```fs
 let addOne x = x + 1
 let timesTwo x = x * 2
 let printOut x = printfn "%i" x
@@ -563,7 +563,7 @@ That prints out `20`. You can imagine it being useful from time to time, though 
 
 F# also has a right to left pipeline operator: `<|`. Users of F# caution against using it too much, and say it should only be used sparingly when it makes code readable. Using both results in some pretty wacky syntax:
 
-```
+```fs
 let printTwo x y = printfn "%i and %i" x y
 
 8 |> printTwo <| 9
@@ -573,7 +573,7 @@ The compiler is perfectly happy with this, printing out `8 and 9`. But there's n
 
 Although even that syntax could be interesting once in a while. Here's one example:
 
-```
+```fs
 type Diplomat = {
     name: string
     message: string
@@ -602,14 +602,14 @@ On that note, what is that `type Diplomat` doing there? Let's look at that now.
 
 The main custom data type in Rust is a struct, which looks very similar to the type we just declared above. Let's look at a Rust `Diplomat` struct and the F# `Diplomat` record again:
 
-```
+```rust
 struct Diplomat {
     name: String,
     message: String
 }
 ```
 
-```
+```fs
 type Diplomat = { 
     name: string
     message: string 
@@ -618,26 +618,26 @@ type Diplomat = {
 
 Note that the fields in Rust are separated with commas, and a new line in F#. In F# you can also use semicolons if you want the fields on the same line:
 
-```
+```fs
 type Diplomat = { name: string; message: string }
 ```
 
 Rust users will also have noticed that we didn't even say we were creating a `Diplomat` when we instantiated them. All we wrote was this:
 
-```
+```fs
 let diplomat1 = {name = "Quintus Aurelius"; message = "We demand concessions!"}
 ```
 
 This is once again an example of the F# compiler looking at the fields of a type to infer the type. The inference doesn't go *that* deep though. For example, if we make a separate Diplomat2 type:
 
-```
+```fs
 type Diplomat = { name: string; message: string }
 type Diplomat2 = { name: string; message: string }
 ```
 
 Then the `meeting` function will assume that it's taking a `Diplomat2` because it shadows the previous one:
 
-```
+```fs
 let meeting person1 person2 =
     printfn "%s says: %s" person1.name person1.message
     printfn "%s responds: %s" person2.name person2.message
@@ -645,14 +645,14 @@ let meeting person1 person2 =
 
 But even declaring this type will cause it to err!
 
-```
+```fs
 type Diplomat = { name: string; message: string }
 type MessagelessDiplomat = { name: string }
 ```
 
 Here too the compiler assumes that the function will take a `MessagelessDiplomat`, and because it doesn't have a `message` field it will give an error. A Rustacean in any case will certainly feel more comfortable declaring function with this sort of syntax:
 
-```
+```fs
 let meeting (person1: Diplomat) (person2: Diplomat) =
     printfn "%s says: %s" person1.name person1.message
     printfn "%s responds: %s" person2.name person2.message
@@ -660,7 +660,7 @@ let meeting (person1: Diplomat) (person2: Diplomat) =
 
 You can also declare anonymous record types in F# by adding `||`:
 
-```
+```fs
 let diplomat1 = {|
     name = "Marcus Aurelius"
     message = "The Emperor demands tribute."
@@ -671,7 +671,7 @@ printfn "%s says: %s" diplomat1.name diplomat1.message
 
 If you want to add methods to a record, you use `with` and then the `member`keyword, followed by `this` and the method you want to write. This is fairly different from Rust, but once the boilerplate is done it is quite similar.
 
-```
+```fs
 type Diplomat = {
     name: string
     message: string
@@ -683,7 +683,7 @@ with
 
 Now our diplomatic summit turns into this:
 
-```
+```fs
 type Diplomat = {
     name: string
     message: string
@@ -706,7 +706,7 @@ diplomat1 |> meeting <| diplomat2
 
 Now let's look at Rust structs in comparison. Let's look at the Diplomat struct again:
 
-```
+```rust
 struct Diplomat {
     name: String,
     message: String
@@ -715,7 +715,7 @@ struct Diplomat {
 
 To declare one, you need to specify that you are creating a `Diplomat` - the Rust compiler doesn't root through the fields to try to determine the type for you. Also don't forget the semicolon. If you do this it won't work:
 
-```
+```rust
 struct Diplomat {
     name: String,
     message: String
@@ -743,7 +743,7 @@ error: expected `;`, found `}`
 
 That was nice of it. Also note that the formatting above is a bit lazy. Let's type `cargo fmt` (or hit the Rustfmt button on the Playground) to make it nice.
 
-```
+```rust
 struct Diplomat {
     name: String,
     message: String,
@@ -761,7 +761,7 @@ Much better! One note here: the semicolon is necessary because Rust is an expres
 
 The F# user is now going to be wondering what this `.to_string()` method is doing and why we need it in Rust. This is because Rust has more than one `String` type, and this is the simplest one to understand in a struct: it's similar to the F# string type mentioned above in that it is an owned collection, though in this case it's a collection of `u8` bytes. (We saw the signature above already) Without the `.to_string()` method, we are instead dealing with a "&str", which is a borrowed reference - the type does not own it. It is essentially an immutable view into a string. And because it doesn't own it, the compiler will complain at this sort of signature:
 
-```
+```rust
 struct Diplomat {
     name: &str,
     message: &str,
@@ -807,7 +807,7 @@ So back to the struct. How does Rust add methods? It uses what is known as an `i
 
 - Methods that take `Self` (the equivalent of F# `this`): these take ownership of the struct's data! The struct will then only live until the end of the function. These methods are usually used with the builder pattern, by bringing in the object, making one change and then returning `Self` back to the struct. This is a bit F-sharpy since it allows you to chain one method to another. Let's take a look at this in detail. Here's a regular struct called `City`:
 
-```
+```rust
 struct City {
     name: String,
     population: i32
@@ -816,7 +816,7 @@ struct City {
 
 Now we'll give it some methods. Start an `impl` block: 
 
-```
+```rust
 impl City {
 
 }
@@ -824,7 +824,7 @@ impl City {
 
 Then add some methods. First a new method. Note: `new` isn't a keyword in Rust - we could call this `neu` or `nouveau` or anything else.
 
-```
+```rust
 fn new() -> Self { // Can also write City
     Self {
         name: "".to_string(),
@@ -837,7 +837,7 @@ Because this method doesn't take `self` (or `&self` or `&mut self`), it's called
 
 So that will make a new city with no name and a population of 0. Now let's add two methods that take self and return it after making a change:
 
-```
+```rust
 fn population(mut self, population: i32) -> Self {
     self.population = population;
     self
@@ -853,7 +853,7 @@ fn name(mut self, name: &str) -> Self {
 
 And with all that, we can now set up a city using this F#-like pattern:
 
-```
+```rust
 fn main() {
     let city = City::new().population(100).name("My city");
 }
@@ -861,7 +861,7 @@ fn main() {
 
 Usually a `new` method will look more like this though:
 
-```
+```rust
 fn new(population: i32, name: &str) -> Self {
     Self {
         population,
@@ -880,7 +880,7 @@ Now that the Fsharpiest part is out of the way, here is what is more commonly pa
 
 Here is a quick example of code that doesn't compile:
 
-```
+```rust
 fn main() {
     let mut my_string = "I am a string".to_string();
     let x = &my_string;
@@ -913,14 +913,14 @@ Both Rust and F# use let bindings for variables that are immutable by default. T
 
 Changing a mutable variable in Rust involves just `=` and the new value. Note that we're not using the `let` keyword here! Using `let` again would create a new variable that shadows the previous one. Using `=` naturally does not let you change the type of whatever it is we are modifying.
 
-```
+```rust
 let mut x = 7;
 x = 8;
 ```
 
 In F#, changing the value of a mutable variable is done with the `<-` operator.
 
-```
+```fs
 let mutable x = 7
 x <- 8
 ```
@@ -929,7 +929,7 @@ x <- 8
 
 In Rust, the order in which you write your code matters inside a single scope, while code outside of this does not. So a typical simple program will have something like this:
 
-```
+```rust
 struct SomeStruct {
     field: i32
 }
@@ -950,7 +950,7 @@ fn main() {
 
 But you can just as easily put the struct, enum and function below `main` and it would have no effect. The one exception to this is macro definitions. (Macros are function-like things that expand into source code before the compiler starts its work and are written with a `!` - more on them later) So this will work:
 
-```
+```rust
 macro_rules! my_macro {
     () => {
         println!("You didn't give me anything");
@@ -973,7 +973,7 @@ But it won't recognize this `my_macro()!` macro if you move it down below main.
 
 As for F#, order always matters. So if you have a `Customer` record like the one following:
 
-```
+```fs
 type Customer = {
     name: string
     accountBalance: float
@@ -991,7 +991,7 @@ Besides named structs, Rust also has tuple structs. They are generally used for 
 
 - Simple structs that don't need named fields.
 
-```
+```rust
 struct RGB(u8, u8, u8);
 
 fn main() {
@@ -1001,7 +1001,7 @@ fn main() {
 
 - New types. While type aliases can be declared with the `type` keyword:
 
-```
+```fs
 type VecOfInts = Vec<i32>;
 
 fn main() {
@@ -1013,7 +1013,7 @@ this type is 100% equivalent to `Vec<i32>` and the compiler reads it as such. Bu
      
 So this will no longer work:
 
-```
+```rust
 struct VecOfInts(Vec<i32>);
 
 fn main() {
@@ -1023,7 +1023,7 @@ fn main() {
      
 But this will:
      
-```
+```rust
 struct VecOfInts(Vec<i32>);
 
 fn main() {
@@ -1033,19 +1033,19 @@ fn main() {
 
 And since `VecOfInts` is its own type, this won't work yet:
      
-```
+```rust
 println!("{:?}", some_vec);
 ```
      
 But this will:
 
-```
+```rust
 println!("{:?}", some_vec.0);
 ```
      
 The ears of Fsharpers will have perked up at this already, because F# uses these sorts of new types **a lot** and loves declaring them on the fly for type safety and readability. Here's an example:
 
-```
+```fs
 type Temperature = 
     | Celsius of float
     | Fahrenheit of float
@@ -1066,7 +1066,7 @@ let temperature = Réaumur 9.0
 
 You can see that `Temperature` does work like an enum, because you can match against it. The variants of `Temperature` also can contain values, though they are somewhat different than in Rust. Here is how you would do more or less the same thing:
 
-```
+```rust
 enum Temperature {
     Celsius(f64),
     Fahrenheit(f64),
@@ -1094,7 +1094,7 @@ fn main() {
      
 So let's compare the two a little. First the Temperature type/enum:
 
-```
+```fs
 type Temperature = 
     | Celsius of float
     | Fahrenheit of float
@@ -1113,17 +1113,18 @@ The Rust version creates an enum called `Temperature` with four arms that all co
      
 The match statement is pretty much identical, though in F# it's an independent function compared with Rust which has it as a method. In both cases you could do the opposite (writing a method in F# or an independent function in Rust) but methods are generally preferred in Rust (because they are [convenient when it comes to working with references](https://doc.rust-lang.org/nomicon/dot-operator.html) for one) while I get the impression that F# likes freely roaming functions instead of methods attached to types.
 
-```
+```fs
 let getTemperature temperature = 
     match temperature with
         | Celsius number -> printfn "%.1f Celsius" number
         | Fahrenheit number -> printfn "%.1f Fahrenheit" number
         | Kelvin number -> printfn "%.1f Kelvin" number
         | Réaumur number -> printfn "%.1f Réaumur" number
-     
+```
+```rust
 impl Temperature {
     fn get_temperature(&self) {
-    use Temperature::*;
+        use Temperature::*;
         match self {
             Celsius(number) => println!("{} Celsius", number),
             Fahrenheit(number) => println!("{} Fahrenheit", number),
