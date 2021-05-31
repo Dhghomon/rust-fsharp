@@ -672,30 +672,31 @@ printfn "%s says: %s" diplomat1.name diplomat1.message
 If you want to add methods to a record, you use the `member`keyword, followed by `this` and the method you want to write.
 
 ```fs
-type Diplomat = {
-    name: string
-    message: string
-}
-
-    member this.Talk() = 
+type Diplomat = 
+    {
+        name: string
+        message: string
+    }
+    member this.Talk = 
         printfn "%s says: %s" this.name this.message
+
 ```
 
 Now our diplomatic summit turns into this:
 
 ```fs
-type Diplomat = {
-    name: string
-    message: string
-}
-
-    member this.Talk() = 
+type Diplomat = 
+    {
+        name: string
+        message: string
+    }
+    member this.Talk = 
         printfn "%s says: %s" this.name this.message
 
 
 let meeting (person1: Diplomat) (person2: Diplomat) =
-    person1.Talk()
-    person2.Talk()
+    person1.Talk
+    person2.Talk
 
 let diplomat1 = {name = "Quintus Aurelius"; message = "We demand concessions!"}
 let diplomat2 = {name = "Argentyx"; message = "We would rather die!"}
