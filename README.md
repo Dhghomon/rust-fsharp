@@ -669,14 +669,14 @@ let diplomat1 = {|
 printfn "%s says: %s" diplomat1.name diplomat1.message
 ```
 
-If you want to add methods to a record, you use `with` and then the `member`keyword, followed by `this` and the method you want to write. This is fairly different from Rust, but once the boilerplate is done it is quite similar.
+If you want to add methods to a record, you use the `member`keyword, followed by `this` and the method you want to write.
 
 ```fs
 type Diplomat = {
     name: string
     message: string
 }
-with
+
     member this.Talk() = 
         printfn "%s says: %s" this.name this.message
 ```
@@ -688,7 +688,7 @@ type Diplomat = {
     name: string
     message: string
 }
-with
+
     member this.Talk() = 
         printfn "%s says: %s" this.name this.message
 
