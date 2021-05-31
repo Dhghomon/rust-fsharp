@@ -1029,9 +1029,102 @@ But this will:
 println!("{:?}", some_vec.0);
 ```
      
-The ears of Fsharpers will have perked up at this already, because F# uses these sorts of new types **a lot** and loves declaring them on the fly for type safety and readability.
-     
+The ears of Fsharpers will have perked up at this already, because F# uses these sorts of new types **a lot** and loves declaring them on the fly for type safety and readability. Here's an example:
 
+```
+type Temperature = 
+    | Celsius of float
+    | Fahrenheit of float
+    | Kelvin of float
+    | Réaumur of float
+
+let getTemperature temperature = 
+    match temperature with
+        | Celsius number -> printfn "%.1f Celsius" number
+        | Fahrenheit number -> printfn "%.1f Fahrenheit" number
+        | Kelvin number -> printfn "%.1f Kelvin" number
+        | Réaumur number -> printfn "%.1f Réaumur" number
+
+getTemperature (Réaumur 9.0)
+
+let temperature = Réaumur 9.0
+```
+
+You can see that `Temperature` does work like an enum, because you can match against it. The variants of `Temperature` also can contain values, though they are somewhat different than in Rust. Here is how you would do more or less the same thing:
+
+```
+enum Temperature {
+    Celsius(f64),
+    Fahrenheit(f64),
+    Kelvin(f64),
+    Reaumur(f64)
+}
+
+impl Temperature {
+    fn get_temperature(&self) {
+    use Temperature::*;
+        match self {
+            Celsius(number) => println!("{} Celsius", number),
+            Fahrenheit(number) => println!("{} Fahrenheit", number),
+            Kelvin(number) => println!("{} Kelvin", number),
+            Reaumur(number) => println!("{} Réaumur", number),
+        }
+    }
+}
+
+fn main() {
+    let temperature = Temperature::Reaumur(9.0);
+    temperature.get_temperature();
+}
+```
+     
+So let's compare the two a little. First the Temperature type/enum:
+
+```
+type Temperature = 
+    | Celsius of float
+    | Fahrenheit of float
+    | Kelvin of float
+    | Réaumur of float
+     
+enum Temperature {
+    Celsius(f64),
+    Fahrenheit(f64),
+    Kelvin(f64),
+    Reaumur(f64)
+}
+```
+     
+The Rust version creates an enum called `Temperature` with four arms that all contain `f64`s. The F# version does something similar. However, in F# these are new types (like Rust tuple structs) organized together under a type called `Temperature`, whereas in Rust they are dependent arms of the enum. You can't write `let x = Reaumur(9.0);` in Rust, only `let x = Temperature::Reaumur(9.0);`.
+     
+The match statement is pretty much identical, though in F# it's an independent function compared with Rust which has it as a method. In both cases you could do the opposite (writing a method in F# or an independent function in Rust) but methods are generally preferred in Rust (because they are [convenient when it comes to working with references](https://doc.rust-lang.org/nomicon/dot-operator.html) for one) while I get the impression that F# likes freely roaming functions instead of methods attached to types.
+
+```
+let getTemperature temperature = 
+    match temperature with
+        | Celsius number -> printfn "%.1f Celsius" number
+        | Fahrenheit number -> printfn "%.1f Fahrenheit" number
+        | Kelvin number -> printfn "%.1f Kelvin" number
+        | Réaumur number -> printfn "%.1f Réaumur" number
+     
+impl Temperature {
+    fn get_temperature(&self) {
+    use Temperature::*;
+        match self {
+            Celsius(number) => println!("{} Celsius", number),
+            Fahrenheit(number) => println!("{} Fahrenheit", number),
+            Kelvin(number) => println!("{} Kelvin", number),
+            Reaumur(number) => println!("{} Réaumur", number),
+        }
+    }
+}
+```
+     
+Note that: 
+
+- `get_temperature` is taking a reference to `self` because we only want to read the data, not destroy it. 
+- We have `use Temperature::*;` to import all the arms of the enum (same as F# `open`) to avoid typing `Temperature::Celsius(number), Temperature::Fahreinheit(number)` etc. You don't have to do this but it saves keystrokes.
+- The identifier Réaumur here is written Reaumur. Rust is working on [non-ASCII identifiers](https://doc.rust-lang.org/stable/unstable-book/language-features/non-ascii-idents.html) and this is already available as an unstable feature. It'll probably end up as a stable feature sooner rather than later.
      
 # Collection types
 
