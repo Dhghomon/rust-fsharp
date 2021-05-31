@@ -972,3 +972,13 @@ let billy = {
 ```
 
 It will generate an error if you move it down below our `let billy` declaration. And not only this: the order of files in an F# program matters too! If you have multiple files, be sure to order them accordingly. This is in accordance with the F# "data in data out" sort of principle that likes to see everything done in order.
+
+# Collection types
+
+Here is a quick overview of the collection types in both languages:
+
+**MAIN TYPES**
+
+Rust: Vec, array
+
+F#: list, array, sequence
