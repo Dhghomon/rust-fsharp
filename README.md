@@ -902,3 +902,65 @@ In F#, changing the value of a mutable variable is done with the `<-` operator.
 let mutable x = 7
 x <- 8
 ```
+
+# Order of code
+
+In Rust, the order in which you write your code matters inside a single scope, while code outside of this does not. So a typical simple program will have something like this:
+
+```
+struct SomeStruct {
+    field: i32
+}
+
+enum SomeChoices {
+    Good,
+    Bad
+}
+
+fn do_thing() {
+    // Do a thing
+}
+
+fn main() {
+    // Do stuff
+}
+```
+
+But you can just as easily put the struct, enum and function below `main` and it would have no effect. The one exception to this is macro definitions. (Macros are function-like things that expand into source code before the compiler starts its work and are written with a `!` - more on them later) So this will work:
+
+```
+macro_rules! my_macro {
+    () => {
+        println!("You didn't give me anything");
+    };
+    ($a:expr) => {
+    {
+        println!("Here's your expression back");
+        $a
+    }
+    };
+}
+
+fn main() {
+    let x = my_macro!();
+    let z = my_macro!(9);
+}
+```
+
+But it won't recognize this `my_macro()!` macro if you move it down below main.
+
+As for F#, order always matters. So if you have a `Customer` record like the one following:
+
+```
+type Customer = {
+    name: string
+    accountBalance: float
+}
+
+let billy = {
+    name = "Billy Brown"
+    accountBalance = 100.00
+}
+```
+
+It will generate an error if you move it down below our `let billy` declaration. And not only this: the order of files in an F# program matters too! If you have multiple files, be sure to order them accordingly. This is in accordance with the F# "data in data out" sort of principle that likes to see everything done in order.
