@@ -6,9 +6,11 @@
 
 # What's this repository for?
 
+Its intent is to be an informal manual for users of Rust and F# to read through to learn about the other language. Here's why I'm putting it together:
+
 [Rust is my first language](https://github.com/Dhghomon/programming_at_40/blob/master/README.md), and recently I've begun delving into languages in the Rust periphery, one of which is F# (since the Rust compiler was originally written in OCaml and it incorporates a good deal of its syntax).
 
-Almost every F# manual is written for C# developers in mind. That's fine, but I have no real familiarity with C#. And when I look at F# in practice I see Rust everywhere: Options, Results, match statements, iterators, and so on and so forth. Reading a book on F# with references to C# everywhere for a Rustacean is kind of like a German being forced to learn Dutch through Portuguese. And for an Fsharper, reading a beginner's book on Rust that assumes the user doesn't know about Option, match statements and the rest is too much filler to be enjoyable to read. 
+Almost every F# manual is written for C# developers in mind. ("In C# you do this, but in F# you do THIS") That's fine, but I have no real familiarity with C#. And when I look at F# in practice I see Rust everywhere: Options, Results, match statements, iterators, and so on and so forth, and as a Rustacean there's no need to convince me of their benefits. Reading a book on F# with references to C# everywhere for a Rustacean is kind of like a German being forced to learn Dutch through Portuguese. And for an Fsharper, reading a beginner's book on Rust that assumes the user doesn't know about Option, match statements and the rest is too much filler to be enjoyable to read.
 
 With so much in common, an F# guide that's readable for Rustaceans that also serves as a Rust guide for F# users seems to be a necessity. So let's put one together.
 
@@ -19,6 +21,32 @@ That's enough for an intro. Let's start!
 # Trying out the language without installing
 
 Both languages have nice online environments to practice without having to install anything. In Rust you use the [Rust Playground](https://play.rust-lang.org/), while F# uses a site called [Try F#](https://try.fsharp.org/).
+
+# Expression-based languages
+
+Almost everything is an expression in both languages, and the last expression in a code block becomes what is returned. Curly brackets are used to indicate a scope in Rust, while F# uses whitespace. Note the similarities between these two:
+
+Rust:
+
+```rust
+fn main() {
+    let x = {
+        let x = 5;
+        let y = 10;
+        x + y // the last statement is the return value -
+              // no return keyword needed!
+    };
+}
+```
+
+F#:
+
+```
+let x = 
+    let x = 5;
+    let y = 10;
+    x + y
+```
 
 # Primitive types
 
@@ -42,6 +70,41 @@ Let's look at some primitive types:
 * Rust `i64` in F# is an `int64` (.NET: `Int64`)
 * Rust `usize` in F# is `unativeint` (.NET: `UIntPtr`)
 * Rust `isize` in F# is `nativeint` (.NET: `IntPtr`)
+* Rust `f32` in F# is `float32` or `single` (.NET: `Single`).
+* Rust `f64` in F# is `float` or `double` (.NET: `Double`). Both Rust and F# default to this type of float when you give it a number with a decimal.
+
+Both Rust and F# use postfixes on numbers to indicate the type if you want to choose something besides the default 32-bit int or 64-bit float. In Rust you can choose either declaring the type or adding a postfix, while in F# it's the postfix that does it. Thus:
+
+Rust `let x: u8 = 5` or `let x = 5u8` is F# `let x = 5uy`. (**u**nsigned b**y**te)
+Rust `let x: u16 = 5` or `let x = 5u16` is F# `let x = 5us`. (**u**nsigned **s**mall, perhaps?)
+Rust `let x: u32 = 5` or `let x = 5u32` is F# `let x = 5u`. (**u**nsigned)
+Rust `let x: u64 = 5` or `let x = 5u64` is F# `let x = 5UL`. (**U**nsigned **L**ong)
+Rust `let x: i8 = 5` or `let x = 5i8` is F# `let x = 5y`. (b**y**te)
+Rust `let x: i16 = 5` or `let x = 5i16` is F# `let x = 5s`. (**s**mall, perhaps?)
+Rust `let x: i32 = 5` or `let x = 5i32` is F# `let x = 5`. (no postfix here - it's the default)
+Rust `let x: i64 = 5` or `let x = 5i64` is F# `let x = 5L`. (**L**ong)
+Rust `let x: f32 = 5.0` or `let x = 5.0f32` is F# `let x = 5.0f`.
+Rust `let x: f64 = 5.0` or `let x = 5.0f64` is F# `let x = 5.0`. (no postfix here - it's the default)
+
+And both Rust and F# have the option of putting _ in between numbers to make them readable. This code works in both languages:
+
+```
+let num = 8000000;
+let readableNum = 8_000_000;
+let maybeReadableNum = 8___________000________000;
+```
+
+As for the F# `decimal` type (`Decimal` in .NET), Rust doesn't have one. Or rather, [it does](https://crates.io/crates/rust_decimal) but it's not part of the standard library. The Rust standard library is particularly small (doesn't even have a random number function for example) and decimals are another type for which external crates (crate = NuGet package, basically) are used. Adding an external crate to your Rust code is as simple as adding a single line to your `cargo.toml` file:
+
+```
+[dependencies]
+rust_decimal = "1.14" <-- Add this and you're done
+```
+
+Then you hit `cargo run` (like `dotnet run`), and it will download the external package, compile and run your code.
+
+(Apparently the F# equivalent to cargo.toml is paket.dependencies.)
+
 * Rust `char` in F# is a `char` (.NET `Char`). Rust `char` is UTF-8, while in F# they are UTF-16.
 * Rust `unit` in F# is also `unit`. They both use `()` to represent it. This is one of those types that is very welcome to see for a Rustacean. (Almost) everything is an expression!
 * Rust `String` in F# is `string`. The F# documentation calls it "a sequential collection of characters that's used to represent text. A String object is a sequential collection of System.Char objects that represent a string", so that makes it very different from Rust's `&str` (a string slice) and much more like String, which is defined as:
