@@ -1387,7 +1387,62 @@ You can declare them with a range as well: `[0..10]`. Note that this includes th
      
 Because they are composed of a head and a tail, F#ers love to put them into recursive functions. Do something with the head, pass the tail on into the function again until it's done. (It'll be done when it matches with `[]`, an empty list) The notation for head and tail when doing a `match` is `head::tail` (or whatever you want to call it: `h::t`, `StartOfList::RestOfList`, etc. - the `::` is the important part).
      
-Let's create a list that we put into a function that prints the head and then 
+For Rustaceans, I think this type here I put together is probably similar to how a list looks in F#
+     
+```
+#[derive(Debug)]
+struct FSharpList<T> {
+    head: Vec<T>, // A vec but we'll make sure it never has more than one item
+    tail: Vec<T>
+}
+
+impl<T> FSharpList<T>
+    
+{  // With this we can give it a range
+    fn new<I: IntoIterator<Item = T>>(input: I) -> Self {
+        let mut list = Self {
+            head: vec![],
+            tail: vec![]
+        };
+        
+        for i in input {
+            if list.head.is_empty() {
+                list.head.push(i);
+            } else {
+                list.tail.push(i);
+            }
+        }
+        list
+    }
+}
+
+fn main() {
+    let fsharp_list = FSharpList::new(0..=10);
+    println!("{:?}", fsharp_list);
+}
+```
+     
+It then prints:
+     
+```
+FSharpList { head: [0], tail: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }
+```
+     
+And the `::` cons notation is basically a shortcut to deconstruct `fsharp_list.head` and `fsharp_list.tail` into two variables we can then use.
+     
+```fs
+let list = [0..10]
+
+let head::tail = list
+
+printfn "%i and %A" head tail
+```
+
+So this will print out: `0 and [1; 2; 3; 4; 5; 6; 7; 8; 9; 10]`.
+     
+(Note: the type of the head and tail of a list in F# is a `'a` and `'a list` (e.g. an `int` followed by an `int list`) but a `Vec` felt easier to implement the head than an `Option<T>`.)
+     
+Let's create a list that we put into a function that prints the head and then puts the remainder back into the function.
      
 This almost works:
      
