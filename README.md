@@ -272,7 +272,7 @@ If we could like the printNumber function to work for more than just one type, t
 One quick note: both languages use attributes in a similar form:
 
 #[attribute_name] Rust attribute
-[<AttributeName>] F# attribute
+[\<AttributeName\>] F# attribute
 
 So back to `inline`: in F# they are used for generics. Taking a look at the [documentation](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/functions/inline-functions), this will look familiar:
 
