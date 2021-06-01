@@ -75,16 +75,16 @@ Let's look at some primitive types:
 
 Both Rust and F# use postfixes on numbers to indicate the type if you want to choose something besides the default 32-bit int or 64-bit float. In Rust you can choose either declaring the type or adding a postfix, while in F# it's the postfix that does it. Thus:
 
-Rust `let x: u8 = 5` or `let x = 5u8` is F# `let x = 5uy`. (**u**nsigned b**y**te)
-Rust `let x: u16 = 5` or `let x = 5u16` is F# `let x = 5us`. (**u**nsigned **s**mall, perhaps?)
-Rust `let x: u32 = 5` or `let x = 5u32` is F# `let x = 5u`. (**u**nsigned)
-Rust `let x: u64 = 5` or `let x = 5u64` is F# `let x = 5UL`. (**U**nsigned **L**ong)
-Rust `let x: i8 = 5` or `let x = 5i8` is F# `let x = 5y`. (b**y**te)
-Rust `let x: i16 = 5` or `let x = 5i16` is F# `let x = 5s`. (**s**mall, perhaps?)
-Rust `let x: i32 = 5` or `let x = 5i32` is F# `let x = 5`. (no postfix here - it's the default)
-Rust `let x: i64 = 5` or `let x = 5i64` is F# `let x = 5L`. (**L**ong)
-Rust `let x: f32 = 5.0` or `let x = 5.0f32` is F# `let x = 5.0f`.
-Rust `let x: f64 = 5.0` or `let x = 5.0f64` is F# `let x = 5.0`. (no postfix here - it's the default)
+* Rust `let x: u8 = 5` or `let x = 5u8` is F# `let x = 5uy`. (**u**nsigned b**y**te)
+* Rust `let x: u16 = 5` or `let x = 5u16` is F# `let x = 5us`. (**u**nsigned **s**mall, perhaps?)
+* Rust `let x: u32 = 5` or `let x = 5u32` is F# `let x = 5u`. (**u**nsigned)
+* Rust `let x: u64 = 5` or `let x = 5u64` is F# `let x = 5UL`. (**U**nsigned **L**ong)
+* Rust `let x: i8 = 5` or `let x = 5i8` is F# `let x = 5y`. (b**y**te)
+* Rust `let x: i16 = 5` or `let x = 5i16` is F# `let x = 5s`. (**s**mall, perhaps?)
+* Rust `let x: i32 = 5` or `let x = 5i32` is F# `let x = 5`. (no postfix here - it's the default)
+* Rust `let x: i64 = 5` or `let x = 5i64` is F# `let x = 5L`. (**L**ong)
+* Rust `let x: f32 = 5.0` or `let x = 5.0f32` is F# `let x = 5.0f`.
+* Rust `let x: f64 = 5.0` or `let x = 5.0f64` is F# `let x = 5.0`. (no postfix here - it's the default)
 
 And both Rust and F# have the option of putting _ in between numbers to make them readable. This code works in both languages:
 
