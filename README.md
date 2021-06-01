@@ -60,18 +60,18 @@ It will make `x` an `i32` in Rust, which in F# is an `int`...which is also a 32 
 
 Let's look at some primitive types:
 
-* Rust `u8`, an 8-bit unsigned integer. In F# this is a `byte`, equivalent to the .NET type `Byte`.
-* Rust `u16` in F# is a `uint16` (.NET: `UInt16`)
-* Rust `u32` in F# is a `uint` (.NET: `UInt32`)
-* Rust `u64` in F# is a `uint64` (.NET: `UInt64`)
-* Rust `i8`, an 8-bit signed integer. In F# this is an `sbyte`, equivalent to the .NET type `SByte`.
-* Rust `i16` in F# is an `int16` (.NET: `Int16`)
-* Rust `i32` in F# is an `int` (.NET: `Int32`)
-* Rust `i64` in F# is an `int64` (.NET: `Int64`)
-* Rust `usize` in F# is `unativeint` (.NET: `UIntPtr`)
-* Rust `isize` in F# is `nativeint` (.NET: `IntPtr`)
-* Rust `f32` in F# is `float32` or `single` (.NET: `Single`).
-* Rust `f64` in F# is `float` or `double` (.NET: `Double`). Both Rust and F# default to this type of float when you give it a number with a decimal.
+* Rust `u8` in F# is a `uint8` which is also a `byte` (.NET: `System.Byte`).
+* Rust `u16` in F# is a `uint16` (.NET: `System.UInt16`)
+* Rust `u32` in F# is a `uint32` (.NET: `System.UInt32`) which is also a `uint`.
+* Rust `u64` in F# is a `uint64` (.NET: `System.UInt64`)
+* Rust `i8` in F# is an `int8` which is also an `sbyte` (.NET: `System.SByte`).
+* Rust `i16` in F# is an `int16` (.NET: `System.Int16`)
+* Rust `i32` in F# is an `int32` (.NET: `System.Int32`) which is also an `int`.
+* Rust `i64` in F# is an `int64` (.NET: `System.Int64`)
+* Rust `usize` in F# is `unativeint` (.NET: `System.UIntPtr`)
+* Rust `isize` in F# is `nativeint` (.NET: `System.IntPtr`)
+* Rust `f32` in F# is `float32` which is also a `single` (.NET: `System.Single`).
+* Rust `f64` in F# is `float` which is also a `double` (.NET: `System.Double`). Both Rust and F# default to this type of float when you give it a number with a decimal.
 
 Both Rust and F# use postfixes on numbers to indicate the type if you want to choose something besides the default 32-bit int or 64-bit float. In Rust you can choose either declaring the type or adding a postfix, while in F# it's the postfix that does it. Thus:
 
@@ -83,7 +83,7 @@ Both Rust and F# use postfixes on numbers to indicate the type if you want to ch
 * Rust `let x: i16 = 5` or `let x = 5i16` is F# `let x = 5s`. (**s**hort)
 * Rust `let x: i32 = 5` or `let x = 5i32` is F# `let x = 5`. (no postfix here - it's the default)
 * Rust `let x: i64 = 5` or `let x = 5i64` is F# `let x = 5L`. (**L**ong)
-* Rust `let x: f32 = 5.0` or `let x = 5.0f32` is F# `let x = 5.0f`.
+* Rust `let x: f32 = 5.0` or `let x = 5.0f32` is F# `let x = 5.0f` or `let x = 5f`.
 * Rust `let x: f64 = 5.0` or `let x = 5.0f64` is F# `let x = 5.0`. (no postfix here - it's the default)
 
 And both Rust and F# have the option of putting _ in between numbers to make them readable. This code works in both languages:
