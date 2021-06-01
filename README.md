@@ -128,9 +128,17 @@ pub struct String {
 However, note that .NET strings [are immutable](https://docs.microsoft.com/en-us/dotnet/api/system.string?view=net-5.0#Immutability):
 
 ```
-A String object is called immutable (read-only), because its value cannot be modified after it has been created. Methods that appear to modify a String object actually return a new String object that contains the modification.
+A String object is called immutable (read-only), because its value cannot be
+modified after it has been created. Methods that appear to modify a String 
+object actually return a new String object that contains the modification.
 
-Because strings are immutable, string manipulation routines that perform repeated additions or deletions to what appears to be a single string can exact a significant performance penalty. For example, the following code uses a random number generator to create a string with 1000 characters in the range 0x0001 to 0x052F. Although the code appears to use string concatenation to append a new character to the existing string named str, it actually creates a new String object for each concatenation operation.
+Because strings are immutable, string manipulation routines that perform 
+repeatedadditions or deletions to what appears to be a single string can exact a
+ significant performance penalty. For example, the following code uses a random 
+number generator to create a string with 1000 characters in the range 0x0001 to 
+0x052F. Although the code appears to use string concatenation to append a new 
+character to the existing string named str, it actually creates a new String 
+object for each concatenation operation.
 ```
 
 So in that case it's very different from a `Vec<char>`, which can simply append a `char` and only needs to reallocate once it surpasses its capacity (which is done automatically).
@@ -272,9 +280,12 @@ So back to `inline`: in F# they are used for generics. Taking a look at the [doc
 Inline functions are functions that are integrated directly into the calling code.
 
 Using Inline Functions
-When you use static type parameters, any functions that are parameterized by type parameters must be inline. This guarantees that the compiler can resolve these type parameters. When you use ordinary generic type parameters, there is no such restriction.
+When you use static type parameters, any functions that are parameterized by type 
+parameters must be inline. This guarantees that the compiler can resolve these type 
+parameters. When you use ordinary generic type parameters, there is no such restriction.
      
-The presence of inline affects type inference. This is because inline functions can have statically resolved type parameters, whereas non-inline functions cannot.
+The presence of inline affects type inference. This is because inline functions can 
+have statically resolved type parameters, whereas non-inline functions cannot.
 ```
      
 Ah! So it's similar to Rust's static dispatch / monomorphization (monomorphization = making it have a single form): namely, where you write code that tells the compiler to take a certain generic type, which is then statically dispatched during compile time into a concrete type. Let's look at Rust generics for a moment to see how this works.
@@ -674,13 +685,19 @@ The compiler complains:
 
 ```
 expected type `i32`
-           found struct `Filter<Map<RangeInclusive<{integer}>, [closure@src/main.rs:3:14: 3:33]>, [closure@src/main.rs:4:17: 4:41]>`
+     found struct `Filter<Map<RangeInclusive<{integer}>, 
+     [closure@src/main.rs:3:14: 3:33]>, [closure@src/main.rs:4:17: 4:41]>`
+     
 ```
 
 So all we've done is put together a type Filter<Map<RangeInclusive etc. etc. etc. And if we call .map a whole bunch of times it just keeps on putting this big struct together:
 
 ```
-found struct `Map<Map<Map<Map<Map<Map<Map<Map<RangeInclusive<{integer}>, [closure@src/main.rs:3:14: 3:33]>, [closure@src/main.rs:4:14: 4:33]>, [closure@src/main.rs:5:14: 5:33]>, [closure@src/main.rs:6:14: 6:33]>, [closure@src/main.rs:7:14: 7:33]>, [closure@src/main.rs:8:14: 8:33]>, [closure@src/main.rs:9:14: 9:33]>, [closure@src/main.rs:10:14: 10:33]>`
+found struct `Map<Map<Map<Map<Map<Map<Map<Map<RangeInclusive<{integer}>, [closur
+e@src/main.rs:3:14: 3:33]>, [closure@src/main.rs:4:14: 4:33]>, [closure@src/main
+.rs:5:14: 5:33]>, [closure@src/main.rs:6:14: 6:33]>, [closure@src/main.rs:7:14: 
+7:33]>, [closure@src/main.rs:8:14: 8:33]>, [closure@src/main.rs:9:14: 9:33]>, [c
+losure@src/main.rs:10:14: 10:33]>`
 ```
 
 This struct is all ready to go, and gets run *once* when we actually decide to do something with it (like collect it into a `Vec`). The pipeline operator in F#, however, gets run every time you use it: if you do something like this:
@@ -1410,19 +1427,26 @@ So that's the most often used collection type in Rust. Let's look at the one F# 
 A list is really quite different from similar types in Rust, because Rust for the most part eschews linked lists, and this is what a list is. Rust has a [LinkedList](https://doc.rust-lang.org/std/collections/struct.LinkedList.html) type but right in the documentation it advises the user not to use it: `NOTE: It is almost always better to use Vec or VecDeque because array-based containers are generally faster, more memory efficient, and make better use of CPU cache.` I've never used one, and have yet to see code that does. For the curious, [here is a cautionary tale](https://rust-unofficial.github.io/too-many-lists/) about implementing linked lists in Rust: the language's design simply isn't a good fit with them and there isn't really a benefit to them in any case. I love the way the book starts:
      
 ```
-Just so we're totally 100% clear: I hate linked lists. With a passion. Linked lists are terrible data structures. Now of course there's several great use cases for a linked list:
-
+Just so we're totally 100% clear: I hate linked lists. With a passion. Linked 
+lists are terrible data structures. Now of course there's several great use  
+cases for a linked list:
+     
 You want to do a lot of splitting or merging of big lists. A lot.
 
 You're doing some awesome lock-free concurrent thing.
 
 You're writing a kernel/embedded thing and want to use an intrusive list.
 
-You're using a pure functional language and the limited semantics and absence of mutation makes linked lists easier to work with.
+You're using a pure functional language and the limited semantics and absence 
+of mutation makes linked lists easier to work with.
 
 ... and more!
 
-But all of these cases are super rare for anyone writing a Rust program. 99% of the time you should just use a Vec (array stack), and 99% of the other 1% of the time you should be using a VecDeque (array deque). These are blatantly superior data structures for most workloads due to less frequent allocation, lower memory overhead, true random access, and cache locality.
+But all of these cases are super rare for anyone writing a Rust program. 99% 
+of the time you should just use a Vec (array stack), and 99% of the other 
+1% of the time you should be using a VecDeque (array deque). These are 
+blatantly superior data structures for most workloads due to less frequent
+allocation, lower memory overhead, true random access, and cache locality.
 ```
      
 Notice the `You're using a pure functional language and the limited semantics and absence of mutation makes linked lists easier to work with.` part? That's why you see them in F# a lot. So here's how they work:
@@ -1609,7 +1633,12 @@ help: insert some indirection (e.g., a `Box`, `Rc`, or `&`) to make `Book` repre
 So what's this `Box` it's talking about? It's a smart pointer to data on the heap. With this the compiler will be happy with a recursive type:
      
 ```
-At compile time, Rust needs to know how much space a type takes up. One type whose size can’t be known at compile time is a recursive type, where a value can have as part of itself another value of the same type. Because this nesting of values could theoretically continue infinitely, Rust doesn’t know how much space a value of a recursive type needs. However, boxes have a known size, so by inserting a box in a recursive type definition, you can have recursive types.
+At compile time, Rust needs to know how much space a type takes up. One type 
+whose size can’t be known at compile time is a recursive type, where a value 
+can have as part of itself another value of the same type. Because this nesting 
+of values could theoretically continue infinitely, Rust doesn’t know how much 
+space a value of a recursive type needs. However, boxes have a known size, so 
+by inserting a box in a recursive type definition, you can have recursive types.
 ```
 
 So with a `Box` added it will look like this and now the compiler is happy:
