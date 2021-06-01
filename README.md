@@ -52,7 +52,7 @@ pub struct String {
 }
 ```
 
-(For F# readers: a `Vec` is probably closest to `[ResizeArray](https://twitter.com/ReedCopsey/status/1399492773900914691)`)
+(For F# readers: a `Vec` is probably closest to [ResizeArray](https://twitter.com/ReedCopsey/status/1399492773900914691))
 
 So perhaps a Rust equivalent of the F# `string` would be:
 
