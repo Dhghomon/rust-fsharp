@@ -259,7 +259,7 @@ Notice that the messages are saying the same thing backwards.
 
 Rust: expected `i32`, found `u8` = **The function is expecting an i32, but you gave me a u8**
 
-F: This expression was expected to have type 'byte' but here has type 'int' = **Your input made me expect a byte, but the function is of type int**
+F#: This expression was expected to have type 'byte' but here has type 'int' = **Your input made me expect a byte, but the function is of type int**
 
 (The part mentioning `.into()` in the Rust message is another way to convert between types - more on that later)
 
