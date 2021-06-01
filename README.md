@@ -1283,5 +1283,228 @@ fn main() {
 
 To see all the methods for `Vec`, go to the documentation [here](https://doc.rust-lang.org/std/vec/struct.Vec.html) and look on the left.
      
-## Arrays
+Some of the most common are:
      
+`push`: as seen above, this pushes a single item onto the Vec.
+
+`with_capacity`: every Vec has an automatically determined capacity that starts at 0, then goes to 4 and thereafter doubles whenever necessary. You can see this in action in the following code, which tracks the capacity of the `Vec` and prints whenever it doubles:
+     
+```
+fn main() {
+    let mut new_vec = vec![];
+    let mut current_capacity = new_vec.capacity();
+    for _ in 0..100_000 {
+        new_vec.push('a');
+        if new_vec.capacity() != current_capacity {
+            println!("Capacity is now {}", new_vec.capacity());
+            current_capacity = new_vec.capacity();
+        }
+    }
+}
+```
+     
+Look at all the reallocations! You won't notice any performance impact at this level, but there's no reason to reallocate if you don't need to:
+     
+```
+Capacity is now 4
+Capacity is now 8
+Capacity is now 16
+Capacity is now 32
+Capacity is now 64
+Capacity is now 128
+Capacity is now 256
+Capacity is now 512
+Capacity is now 1024
+Capacity is now 2048
+Capacity is now 4096
+Capacity is now 8192
+Capacity is now 16384
+Capacity is now 32768
+Capacity is now 65536
+Capacity is now 131072
+```
+     
+So just change `let mut new_vec = vec![];` into `let mut new_vec = Vec::with_capacity(131072);` and you'll get a Vec that won't ever need to reallocate.
+
+`pop` - returns an `Option<T>` (T being whatever type the Vec is holding). Unwrap it if you are sure, otherwise do a match statement or `unwrap_or()` or similar method to safely handle it.
+
+`chunks` - Splits your Vec into chunks. If you have a Vec of 25 items and call chunks(6) on it, it will give you four chunks of 6, followed by a final chunk of 1.
+
+`windows` - Similar to chunks but only moves down one index at a time. If you have a Vec of 25 items and call windows(6) on it, it will give you one from index 0 to 6, then another from index 1 to 7, then index 2 to 8, and so on.
+
+`contains` - returns a `bool` letting you know if it contains something.
+
+`first` and `last` - returns the first or last item as an `Option<&T>` (because it might be empty). &T means a reference to the item: we're not popping it out.
+
+`sort` - automatically sorts the Vec. Use `sort_by` if you want to specify your own sort.
+     
+So that's the most often used collection type in Rust. Let's look at the one F# uses the most: a list.
+     
+## List (F#)
+     
+A list is really quite different from similar types in Rust, because Rust for the most part eschews linked lists, and this is what a list is. Rust has a [LinkedList](https://doc.rust-lang.org/std/collections/struct.LinkedList.html) type but right in the documentation it advises the user not to use it: `NOTE: It is almost always better to use Vec or VecDeque because array-based containers are generally faster, more memory efficient, and make better use of CPU cache.` I've never used one, and have yet to see code that does. For the curious, [here is a cautionary tale](https://rust-unofficial.github.io/too-many-lists/) about implementing linked lists in Rust: the language's design simply isn't a good fit with them and there isn't really a benefit to them in any case. I love the way the book starts:
+     
+```
+Just so we're totally 100% clear: I hate linked lists. With a passion. Linked lists are terrible data structures. Now of course there's several great use cases for a linked list:
+
+You want to do a lot of splitting or merging of big lists. A lot.
+
+You're doing some awesome lock-free concurrent thing.
+
+You're writing a kernel/embedded thing and want to use an intrusive list.
+
+You're using a pure functional language and the limited semantics and absence of mutation makes linked lists easier to work with.
+
+... and more!
+
+But all of these cases are super rare for anyone writing a Rust program. 99% of the time you should just use a Vec (array stack), and 99% of the other 1% of the time you should be using a VecDeque (array deque). These are blatantly superior data structures for most workloads due to less frequent allocation, lower memory overhead, true random access, and cache locality.
+```
+     
+Notice the `You're using a pure functional language and the limited semantics and absence of mutation makes linked lists easier to work with.` part? That's why you see them in F# a lot. So here's how they work:
+     
+A list is contained inside `[]` with a semicolon separating each item (because they are expressions). Or whitespace:
+ 
+```fs
+let myList = [8; 9; 10]
+let myList2 = [
+    8
+    9
+    10
+]
+```
+     
+As linked lists, they are divided into a head and a tail. The head is the first item, the tail is the rest.
+   
+```fs
+let myList = [8; 9; 10]
+
+printfn "Head: %i Tail: %A" myList.Head myList.Tail
+```
+     
+You can declare them with a range as well: `[0..10]`. Note that this includes the 10. In Rust `0..10` does not include the 10, but `0..=10` does. F# also has a step operator that you can put in the middle, so `[0 .. 2 .. 10]` is a list that starts at 0 and goes up by 2 until it reaches 10.
+     
+Because they are composed of a head and a tail, F#ers love to put them into recursive functions. Do something with the head, pass the tail on into the function again until it's done. (It'll be done when it matches with `[]`, an empty list) The notation for head and tail when doing a `match` is `head::tail` (or whatever you want to call it: `h::t`, `StartOfList::RestOfList`, etc. - the `::` is the important part).
+     
+Let's create a list that we put into a function that prints the head and then 
+     
+This almost works:
+     
+```fs
+let myList = [0..5..25]
+
+let printList list = 
+  match list with
+    | h::t -> 
+        printfn "Got a %i" h
+        printList t
+    | [] -> printfn "All done"
+
+printList myList
+```
+     
+The compiler is confused and unfortunately is not helping much with this message:
+     
+```
+The value or constructor 'printList' is not defined. Maybe you want one of the following:
+   printf
+   Printf
+   printfn
+   PrintfModule
+```
+
+No, what it needs is the `rec` keyword. With this the compiler will be ready to see the same function name inside the function scope. Add `rec` and it works like a charm:
+     
+```fs
+let myList = [0..5..25]
+
+let rec printList list = 
+  match list with
+    | h::t -> 
+        printfn "Got a %i" h
+        printList t
+    | [] -> printfn "All done"
+
+printList myList
+```
+     
+It prints out:
+     
+```
+Got a 0
+Got a 5
+Got a 10
+Got a 15
+Got a 20
+Got a 25
+All done
+```
+
+The `::` operator is known as the `cons operator`. Readers of the Book in Rust might recognize this, as chapter 15 [talks about it](https://doc.rust-lang.org/book/ch15-01-box.html#more-information-about-the-cons-list). It's a very rarely used structure in Rust but it leads into a discussion about recursion and how Rust handles it.
+     
+Recursion works in Rust too, so this sort of function does work:
+     
+```rust
+fn print_vec(mut input: Vec<i32>) {
+    if !input.is_empty() { // note the !
+        println!("{}", input.pop().unwrap());
+        print_vec(input); // calling the same function
+    } else {
+        println!("All done!");
+    }
+}
+
+fn main() {
+    let my_vec: Vec<i32> = (1..10).rev().collect();
+    print_vec(my_vec);
+}
+```
+     
+(By the way, a `VecDeque` is optimized for popping off the front as well as the back so that would fit here better, but we're just being lazy and calling `.rev()` to reverse the range when creating the Vec)
+     
+But Rust won't be fooled by a recursive type:
+     
+```rust
+struct Book {
+    next_book: Option<Book>
+}
+```
+
+It will balk at this, because this type has has infinite size.
+     
+```
+error[E0072]: recursive type `Book` has infinite size
+ --> src/main.rs:1:1
+  |
+1 | struct Book {
+  | ^^^^^^^^^^^ recursive type has infinite size
+2 |     next_book: Option<Book>
+  |                ------------ recursive without indirection
+  |
+help: insert some indirection (e.g., a `Box`, `Rc`, or `&`) to make `Book` representable
+  |
+2 |     next_book: Box<Option<Book>>
+  |                ^^^^            ^
+```
+     
+So what's this `Box` it's talking about? It's a smart pointer to data on the heap. With this the compiler will be happy with a recursive type:
+     
+```
+At compile time, Rust needs to know how much space a type takes up. One type whose size can’t be known at compile time is a recursive type, where a value can have as part of itself another value of the same type. Because this nesting of values could theoretically continue infinitely, Rust doesn’t know how much space a value of a recursive type needs. However, boxes have a known size, so by inserting a box in a recursive type definition, you can have recursive types.
+```
+
+So with a `Box` added it will look like this and now the compiler is happy:
+     
+```rust
+struct Book {
+    next_book: Box<Option<Book>>,
+}
+
+fn main() {
+    let my_book = Book {
+        next_book: Box::new(Some(Book { next_book: Box::new(None) })),
+    };
+    
+}
+```
+     
+There's no point to this `Book` struct except as an example of the easiest way to satisfy the compiler if you want to start exploring the unrecommended world of recursive linked lists in Rust. As you can see, the compiler will be after you for every bit of data without a known size at compile time, and every reference that breaks the rules. (To start to learn how to bend them a bit, start [here](https://doc.rust-lang.org/book/ch15-04-rc.html). Rust is more flexible than it might seem at first glance if you know how to guarantee that nothing is changing data it shouldn't be allowed to touch).
