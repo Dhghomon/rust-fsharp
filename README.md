@@ -1240,4 +1240,48 @@ Rust: Vec, array, tuples
 
 F#: list, array, sequence, tuples
 
+## Vec
+     
+As mentioned above, a `string` in .NET is `a sequence of Unicode characters`, and a Vec in Rust is sort of like this for whatever type happens to be inside it. `Vec<char>`, `Vec<i32>`, `Vec<Vec<i32>>`, etc. And a `String` in Rust is really a [Vec<u8>](https://doc.rust-lang.org/src/alloc/string.rs.html#279-281) (not chars). That's why F# code like this will be familiar to Rustaceans:
+     
+```fs
+let printChar (str : string) (index : int) =
+    printfn "First character: %c" (str.Chars(index))
+```  
 
+This prints the first character of a string after breaking the string into a sequence of `char`s. In Rust, you'd see something similar like this:
+
+```
+fn print_char(input: &str, index: usize) {
+    let input = input.to_string();
+    println!("First character: {}", input.chars().nth(index).unwrap_or(' '));
+}
+
+fn main() {
+    print_char("Hey there", 8);
+}
+```
+     
+(The `unwrap_or()` method here is saying to either take the value from `Some` if it returns `Some` at that index, and otherwise to return a default value. A simple `.unwrap()` would panic if the index returned `None`)
+     
+On to actual `Vec`s: they are created with `Vec::new()` (empty Vec) or `Vec::from()` (if you have something that can be converted to a Vec, like an array), or most simply with the `vec![]` macro. This on its own won't compile if you don't specify the type:
+
+```rust
+fn main() {
+    let mut x = vec![];
+}
+```
+
+But the moment you push something into the `Vec` it will know the type. So this will work:
+ 
+```
+fn main() {
+    let mut x = vec![];
+    x.push(9);
+}
+```
+
+To see all the methods for `Vec`, go to the documentation [here](https://doc.rust-lang.org/std/vec/struct.Vec.html) and look on the left.
+     
+## Arrays
+     
