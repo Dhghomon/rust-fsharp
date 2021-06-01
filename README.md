@@ -267,7 +267,7 @@ F: This expression was expected to have type 'byte' but here has type 'int' = **
 
 (Thanks to [isaacabraham](https://github.com/Dhghomon/rust-fsharp/issues/1) for this)
 
-If we could like the printNumber function to work for more than just one type, there is a way to make it generic: the `inline` keyword. Rust also has an `inline` keyword but it's an attribute [used for greater performance](https://nnethercote.github.io/perf-book/inlining.html) in certain cases.
+If we would like the printNumber function to work for more than just one type, there is a way to make it generic: the `inline` keyword. Rust also has an `inline` keyword but it's an attribute [used for greater performance](https://nnethercote.github.io/perf-book/inlining.html) in certain cases.
 
 One quick note: both languages use attributes in a similar form:
 
