@@ -1982,3 +1982,44 @@ This prints:
 Tallinn
 Helsinki
 ```
+
+Fold is interesting. It can be used for more interesting things than adding everything together, but let's stick to the simple examples for now. Here's a simple fold in Rust:
+ 
+```
+fn main() {
+    let sum = (1..=10)
+        .fold(0, |first_number, next_number| first_number + next_number);
+        
+    println!("{}", sum);
+}
+```
+     
+Fsharpers will notice that the order is reversed: you start with the beginning value (here a 0), then name the variables, and then give instructions for what to do with them.
+     
+```
+let sum = 
+    [1..10]
+    |> List.fold (fun firstNumber secondNumber -> firstNumber + secondNumber) 0
+
+printfn "%i" sum
+```
+
+So for the Rustaceans, you do this: start with `List.fold`, then do the regular `fun` signature to give the names of the 'variables' and then say what to do with them. And now that that's done, you give the function a starting value.
+     
+But here's the interesting part. You can also write it like this:
+
+```
+let sum = 
+    [1..10]
+    |> List.fold (+) 0
+
+printfn "%i" sum
+```
+     
+Whoah! What this `(+)` is doing is basically treating the + operator as a function, and since it takes two parameters (and fold *gives* two parameters each time), it works. You can sort of imagine it as using the `add(x, y)` function in Rust instead of `x + y`, because that's exactly what the `+` operator calls in Rust. Like this:
+
+Rust: `(1..=10).fold(0, |a, b| Add::add(a, b))`
+
+F#: `[1..10] |> List.fold (+) 0`
+     
+The big difference is that the two numbers get shipped in anonymously if desired and the `(+)` function just takes care of them as they come in.
