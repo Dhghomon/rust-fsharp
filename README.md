@@ -1619,6 +1619,15 @@ Got a 20
 Got a 25
 All done
 ```
+     
+Lists in F# are immutable, but you can add an item with `::` to make a new one, and `@` to concatenate two lists:
+
+```fs
+let listOne = [0..3] // [0; 1; 2; 3]
+
+let listTwo = 8 :: listOne // [8; 0; 1; 2; 3]
+let twoListsTogether = listOne @ listTwo // [0; 1; 2; 3; 8; 0; 1; 2; 3]
+```
 
 The `::` operator is known as the `cons operator`. Readers of the Book in Rust might recognize this, as chapter 15 [talks about it](https://doc.rust-lang.org/book/ch15-01-box.html#more-information-about-the-cons-list). It's a very rarely used structure in Rust but it leads into a discussion about recursion and how Rust handles it.
      
