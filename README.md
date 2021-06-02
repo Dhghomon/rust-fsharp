@@ -1892,3 +1892,93 @@ The output is:
 KVAK!
 RRRRRR bow woww!!!
 ```
+
+# Map, iterators, etc.
+     
+Both Rustaceans and Fsharpers are very familiar with iterators, mapping/filtering/folding etc. and continuing to do this until the desired result is achieved. Thanks to that, most of this section will just be quick samples from each language to show how to do the same thing in each one.
+     
+## Basic use
+     
+In Rust, you start out an iterator by choosing the kind you want: `iter()` for an iterator of references, `iter_mut()` for mutable references, and `into_iter()` for an iterator that is consumed. In F#, you instead use a syntax that starts with the type and then the method. For example, mapping over a `List` uses `List.map`.
+     
+For the curious, [here are the methods for iterators in Rust](https://doc.rust-lang.org/std/iter/trait.Iterator.html) (**Provided Methods** on the left side of the screen), and [here are the List methods in F#](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-listmodule.html). There are methods for Arrays etc. inside those core docs too. You'll notice that a lot of the methods have the same name, but there are quite a few in one language but not the other, so if you have a lot of iterating to do then it's probably best to just skim the whole page and jot down methods that look useful for your task.
+     
+Let's do some simple mapping in both languages. We'll make a Vec / List of three numbers that we'll double.
+
+```
+fn main() {
+    let num_vec = vec![7, 8, 9];
+    
+    let doubled_vec: Vec<_> = num_vec
+        .into_iter()
+        .map(|number| number * 2)
+        .collect();
+        
+    println!("{:?}", doubled_vec);
+}
+```
+     
+This prints `[14, 16, 18]`, no surprise. Note the following:
+     
+- We used into_iter() so num_vec is consumed. Trying to print it out or access it won't work.
+- We gave it the type `Vec<_>` because Rust can figure out that it's a `Vec<i32>`, but you can type `Vec<i32>` if you want.
+- We have to collect it into something at the end, otherwise it'll just be an iterator type (they are lazy and do nothing unless consumed).
+     
+The F# code is simpler:
+     
+```
+let listOne = [7..9]
+
+let listTwo = 
+    listOne
+    |> List.map (fun number -> number * 2)
+
+printfn "%A" listTwo
+```
+     
+The only thing to remember for a Rustacean is probably the `fun number -> number * 2` syntax, which is the F# equivalent of `|number| number * 2`. When you see `||` think `fun`, and think `fun` when you see `||`.
+     
+Now the big difference is that the Rust iterator methods work on anything that implements the trait, while for F# they are methods for built-in types. To implement the trait, there's one method you have to define called `next()`. This returns an `Option<Self::Item>` (Item being the return value when you call `.next()`).
+     
+Let's implement `Iterator` for a Metropolis type again. Each metropolis is composed of multiple cities, and our Metropolis iterator will return their names (if any). It'll look like this:
+     
+```
+struct Metropolis {
+    cities: Vec<String>,
+    population: u32
+}
+
+impl Iterator for Metropolis {
+    type Item = String; // Tell Rust the associated type
+    
+    fn next(&mut self) -> Option<Self::Item> { // The signature for next is always the same
+     // Then our logic
+        if !self.cities.is_empty() {
+            Some(self.cities.remove(0)) // Remove removes an item and shifts the rest to the left
+        } else {
+            None
+        }
+    }
+```
+     
+And here's a pleasant surprise: implementing `Iterator` lets you use a `for` loop! Let's try it in main:
+
+```rust
+fn main() {
+    let my_city = Metropolis {
+        cities: vec!["Tallinn".to_string(), "Helsinki".to_string()],
+        population: 1_000_000
+    };
+    
+    for city in my_city {
+        println!("{}", city);
+    }
+}
+```
+     
+This prints:
+     
+```
+Tallinn
+Helsinki
+```
