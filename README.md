@@ -1686,3 +1686,192 @@ fn main() {
 ```
      
 There's no point to this `Book` struct except as an example of the easiest way to satisfy the compiler if you want to start exploring the unrecommended world of recursive linked lists in Rust. As you can see, the compiler will be after you for every bit of data without a known size at compile time, and every reference that breaks the rules. (To start to learn how to bend them a bit, start [here](https://doc.rust-lang.org/book/ch15-04-rc.html). Rust is more flexible than it might seem at first glance if you know how to guarantee that nothing is changing data it shouldn't be allowed to touch).
+
+# Traits (Rust) and operator overloading (F#)
+
+Traits in Rust refer to common functionality that you can implement on your own types. A trait is basically a group of shared methods under a name, and with this name you can guarantee to the compiler in a generic function that the object being passed in will be able to perform the behaviour you want it to. For example, maybe you have a `struct City` and would like to add one `City` to another. Since there is no way for the compiler to know how to do this, you `implement Add` for your `City` type. Then you look at the `Add` [trait documentation](https://doc.rust-lang.org/std/ops/trait.Add.html) and see if there's anything you need to do. If you see a "Required Methods" on the top right, it means that you need to write the function out yourself. Add has `fn add` up there with the following example of implementation:
+
+```
+impl Add for Point {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+```
+     
+This trait has an `associated type`: the type that goes with it. You can see it on the line here:
+
+```
+type Output = Self;
+```
+     
+`Output` isn't a special keyword: it's just a name chosen for the associated type. The return type could be anything, depending on how you want to add. Do you want to return the same object (`Self`) or something else? It could be an i32 or anything else you choose. So let's implement `Add` for one type that returns another. We'll make a `City` struct that can be added together to make a `Metropolis`.
+     
+```rust
+struct City {
+    name: String,
+    population: u32
+}
+
+#[derive(Debug)] // So we can print it
+struct Metropolis {
+    cities: Vec<String>,
+    population: u32   
+}
+
+impl std::ops::Add for City {
+    type Output = Metropolis; // See, output doesn't have to be Self
+
+    fn add(self, other: Self) -> Metropolis {
+         
+        // Now just make a regular Vec to put the names in
+        let mut other_cities = Vec::new();
+        other_cities.push(self.name);
+        other_cities.push(other.name);
+        
+        // Now + will give us this:
+        Metropolis {
+            cities: other_cities,
+            population: self.population + other.population
+        }
+    }
+}
+
+fn main() {
+     
+    // Make Tallinn and Telsinki
+    let tallinn = City {
+        name: "Tallinn".to_string(),
+        population: 426_538
+    };
+    
+    let helsinki = City {
+        name: "Helsinki".to_string(),
+        population: 631_695
+    };
+    
+    // Make them a Metropolis
+    let talsinki = tallinn + helsinki;
+    
+    println!("{:?}", talsinki);
+}
+```
+     
+Here's the output: `Metropolis { cities: ["Tallinn", "Helsinki"], population: 1058233 }`.
+     
+Now let's look at something similar in F#: [operator overloading](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/operator-overloading). Let's see if we can imitate our city examples by following the example there.
+     
+Here's the example in the documentation (showing overloading for a bunch of operators):
+     
+```fs
+type Vector(x: float, y : float) =
+   member this.x = x
+   member this.y = y
+   static member (~-) (v : Vector) =
+     Vector(-1.0 * v.x, -1.0 * v.y)
+   static member (*) (v : Vector, a) =
+     Vector(a * v.x, a * v.y)
+   static member (*) (a, v: Vector) =
+     Vector(a * v.x, a * v.y)
+   override this.ToString() =
+     this.x.ToString() + " " + this.y.ToString()
+
+let v1 = Vector(1.0, 2.0)
+
+let v2 = v1 * 2.0
+let v3 = 2.0 * v1
+
+let v4 = - v2
+
+printfn "%s" (v1.ToString())
+printfn "%s" (v2.ToString())
+printfn "%s" (v3.ToString())
+printfn "%s" (v4.ToString())
+```
+     
+Now our City and Metropolis records:
+     
+```rs
+// Declaring here first because 
+// City will need to reference it
+type Metropolis = {
+  cities: List<string>
+  population: int
+}
+
+type City = 
+  {
+  name: string
+  population: int
+  }
+  static member (+) (a, b: City) =
+    let metropolis =
+      {
+      cities = [a.name; b.name]
+      population = a.population + b.population
+      }
+    metropolis
+
+
+let tallinn = { name = "Tallinn"; population = 426_538 }
+let helsinki = { name = "Helsinki"; population = 631_695 }
+     
+let metropolis = tallinn + helsinki
+
+printfn "%A" metropolis
+```
+
+Holding the mouse over `metropolis` shows `val metropolis : Metropolis`, and `printfn` shows what we want to see too:
+     
+```
+{cities = [Tallinn; Helsinki];
+ population = 1058233}
+```
+     
+While similar in this case, traits in Rust are quite different. Here's one more example of how they can be used, as trait bounds:
+     
+```
+trait Duckish {} // For duck-like things
+trait Doggish {} // For dog-like things
+```
+     
+We'll say that only duck-like things will implement Duckish, and dog-like things get Doggish. That's because we're going to make a `fn bark` and `fn quack` and don't want to let the wrong animal types use them. Note that the traits don't have any methods, but that's fine because they are just being used as bounds. The whole thing looks like this:
+     
+```
+trait Duckish {}
+trait Doggish {}
+
+fn bark<T: Doggish>(_: &T) { // throw in a reference
+    println!("RRRRRR bow woww!!!");
+}
+
+fn quack<T: Duckish>(_: &T) {
+    println!("KVAK!");
+}
+
+struct Goose; // Nothing in here, that's fine
+impl Duckish for Goose {} // Now Goose has the trait
+
+struct Coyote;
+impl Doggish for Coyote {}
+
+fn main() {
+    let my_goose = Goose;
+    let my_coyote = Coyote;
+
+    quack(&my_goose);
+    bark(&my_coyote);
+}
+```
+     
+The output is:
+     
+```
+KVAK!
+RRRRRR bow woww!!!
+```
