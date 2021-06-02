@@ -263,6 +263,35 @@ F#: This expression was expected to have type 'byte' but here has type 'int' = *
 
 (The part mentioning `.into()` in the Rust message is another way to convert between types - more on that later)
 
+In Rust, the `as` keyword is often used to rename types, enum variants etc. within a scope if you have duplicate names or the names are too long.
+
+```rust
+// Some weird enum from an external crate
+enum ErrorTypes {
+    BigErrorExplanationThatIsTooLongToType,
+    WhyDidTheyWriteTheseEnumVariantsLikeThisSeriously,
+    ButThisIsPartOfExternalCodeINeedToCompile,
+}
+
+// Let's shorten this
+use ErrorTypes::{
+    BigErrorExplanationThatIsTooLongToType as ErrorOne,
+    ButThisIsPartOfExternalCodeINeedToCompile as ErrorTwo,
+    WhyDidTheyWriteTheseEnumVariantsLikeThisSeriously as ErrorThree,
+};
+
+fn main() {
+
+    let x = ErrorOne;
+
+    match x {
+        ErrorOne => {}
+        ErrorTwo => {}
+        ErrorThree => {}
+    }
+}
+```
+
 ## The inline keyword in F#
 
 (Thanks to [isaacabraham](https://github.com/Dhghomon/rust-fsharp/issues/1) for this)
