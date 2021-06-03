@@ -1822,7 +1822,7 @@ printfn "%s" (v4.ToString())
      
 Now our City and Metropolis records:
      
-```rs
+```fs
 // Declaring here first because 
 // City will need to reference it
 type Metropolis = {
