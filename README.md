@@ -64,7 +64,16 @@ Both Rust and F# have a compiler that uses type inference. They also both use `l
 let x = 9;
 ```
 
-It will make `x` an `i32` in Rust, which in F# is an `int`...which is also a 32 bit signed integer. By the way, F# doesn't use a semicolon at the end (so don't use one) but the compiler also won't yell at you if you do.
+It will make `x` an `i32` in Rust, which in F# is an `int`...which is also a 32 bit signed integer. By the way, F# doesn't use a semicolon at the end (so don't use one) but the compiler also won't yell at you if you do. There's no reason to add semicolons to the previous example but the effect is the same even if we do:
+
+```
+let x = 
+    let x = 5;
+    let y = 10;
+    x + y
+```
+
+(This is because it returns a unit type in both cases.)
 
 Let's look at some primitive types:
 
