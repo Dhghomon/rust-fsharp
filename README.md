@@ -672,7 +672,7 @@ In Rust, `||` is for closures and `()` for regular functions, while in F# regula
 
 In both cases you are giving a name to the input in order to tell it what to do in the next stage.
      
-(By the way, both Rust and F# share the distinction between closures (anonymous functions that capture variables) and anonymous functions (just functions without names) but Rustaceans will tend to call anything with the `||` pipes a closure even if it's technicaly an anonymous function. Even the [Book](https://doc.rust-lang.org/book/ch13-01-closures.html） describes them as "anonymous functions that **can** capture their environment, not anonymous functions that **do** capture their environment. For a discussion on the nomenclature, see [this issue](https://github.com/Dhghomon/easy_rust/issues/44))
+(By the way, both Rust and F# share the distinction between closures (anonymous functions that capture variables) and anonymous functions (just functions without names) but Rustaceans will tend to call anything with the `||` pipes a closure even if it's technicaly an anonymous function. Even the [Book](https://doc.rust-lang.org/book/ch13-01-closures.html) describes them as "anonymous functions that **can** capture their environment", not "anonymous functions that **do** capture their environment". For a discussion on the nomenclature, see [this issue](https://github.com/Dhghomon/easy_rust/issues/44))
 
 There is a big difference between Rust and F# here: Rust has something known as "zero-cost abstractions", which essentially means that there is no performance impact for fancy code compared to simple `for` loops and such things. Let's look at `times_two_then_even` in Rust again:
 
