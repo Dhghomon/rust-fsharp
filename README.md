@@ -1453,6 +1453,8 @@ Capacity is now 131072
 ```
      
 So just change `let mut new_vec = vec![];` into `let mut new_vec = Vec::with_capacity(100_000);` and you'll get a Vec that won't ever need to reallocate.
+     
+(By the way, if you push another 'a' into the Vec after this it will now have a capacity of 200000.)
 
 `pop` - returns an `Option<T>` (T being whatever type the Vec is holding). Unwrap it if you are sure, otherwise do a match statement or `unwrap_or()` or similar method to safely handle it.
 
