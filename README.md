@@ -1379,9 +1379,8 @@ let printChar (str : string) (index : int) =
 
 This prints the first character of a string after breaking the string into a sequence of `char`s. In Rust, you'd see something similar like this:
 
-```
+```rust
 fn print_char(input: &str, index: usize) {
-    let input = input.to_string();
     println!("First character: {}", input.chars().nth(index).unwrap_or(' '));
 }
 
