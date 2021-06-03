@@ -51,8 +51,8 @@ F#:
 
 ```
 let x = 
-    let x = 5;
-    let y = 10;
+    let x = 5
+    let y = 10
     x + y
 ```
 
