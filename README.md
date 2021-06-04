@@ -1319,7 +1319,8 @@ type Temperature =
     | Fahrenheit of float
     | Kelvin of float
     | Réaumur of float
-     
+```
+```rust
 enum Temperature {
     Celsius(f64),
     Fahrenheit(f64),
