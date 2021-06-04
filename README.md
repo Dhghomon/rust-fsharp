@@ -2006,7 +2006,7 @@ Tallinn
 Helsinki
 ```
      
-For F#, every collection implements the interface `seq<'T>`. The equivalent of `IntoIterator` is `seq<'T>` while for `Iterator` it is `System.Collections.Generic.IEnumerator<'T>`. While implementing these interfaces, you must also implement the outdated non-generic versions that are essentially replaced by the generic versions in 2005 with .NET Framework 2.0.
+For F#, every collection implements the interface `seq<'T>`. The equivalent of `IntoIterator` is `seq<'T>`, while for `Iterator` it is `System.Collections.Generic.IEnumerator<'T>`. While implementing these interfaces, you must also implement the outdated non-generic versions that are essentially replaced by the generic versions in 2005 with .NET Framework 2.0.
      
 F#'s `for` loops accept any type implementing the `seq<'T>` interface, so this construct is an alternative to only using library functions.
      
@@ -2025,7 +2025,7 @@ and IntoIter(metropolis) =
         member _.Current = current
         member _.Dispose() = () // No equivalent, called when iteration ends
     interface System.Collections.IEnumerator with
-        member this.MoveNext() = // This is very similar to Rust's next except that this returns whether it's a Some, while the value is assigned a mutable variable read by the Current property
+        member this.MoveNext() = // This is very similar to Rust's "next" except that this returns whether it's a Some, while the value is assigned to a private mutable variable read by the Current property
             if metropolis.cities.Count > 0 then
                 current <- metropolis.cities.[0]
                 metropolis.cities.RemoveAt 0
