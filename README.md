@@ -1955,26 +1955,36 @@ Now the big difference is that the Rust iterator methods work on anything that i
      
 Let's implement `Iterator` for a Metropolis type again. Each metropolis is composed of multiple cities, and our Metropolis iterator will return their names (if any). It'll look like this:
      
+Instead of implementing `Iterator` only, we will also implement `IntoIterator` because the `cities` `Vec` is an iterable instead of an iterator. When `into_iter` is called, an `Iterator` for a Metropolis will be created.
+     
 ```
 struct Metropolis {
     cities: Vec<String>,
     population: u32
 }
 
-impl Iterator for Metropolis {
-    type Item = String; // Tell Rust the associated type
-    
-    fn next(&mut self) -> Option<Self::Item> { // The signature for next is always the same
-     // Then our logic
-        if !self.cities.is_empty() {
-            Some(self.cities.remove(0)) // Remove removes an item and shifts the rest to the left
+impl IntoIterator for Metropolis {
+    type Item = String;
+    type IntoIter = IntoIter;
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIter(self)
+    }
+}
+
+pub struct IntoIter(Metropolis);
+impl Iterator for IntoIter {
+    type Item = String;
+    fn next(&mut self) -> Option<Self::Item> {
+        if !self.0.cities.is_empty() {
+            Some(self.0.cities.remove(0))
         } else {
             None
         }
     }
+}
 ```
      
-And here's a pleasant surprise: implementing `Iterator` lets you use a `for` loop! Let's try it in main:
+And here's a pleasant surprise: implementing `IntoIterator` lets you use a `for` loop! Let's try it in main:
 
 ```rust
 fn main() {
@@ -1991,6 +2001,50 @@ fn main() {
      
 This prints:
      
+```
+Tallinn
+Helsinki
+```
+     
+For F#, every collection implements the interface `seq<'T>`. The equivalent of `IntoIterator` is `seq<'T>`, while for `Iterator` it is `System.Collections.Generic.IEnumerator<'T>`. While implementing these interfaces, you must also implement the outdated non-generic versions that are essentially replaced by the generic versions in 2005 with .NET Framework 2.0. But in practice it is rare that you would implement these interfaces directly, instead you would access the actual collections and iterate them. Moreover, the boilerplate isn't that severe - it's just 4 additional lines of boilerplate (interface ... with / member GetEnumerator / interface ... with / member Current) that are extra compared to a clean design.
+     
+F#'s `for` loops accept any type implementing the `seq<'T>` interface, so this construct is an alternative to only using library functions.
+     
+```fs
+type Metropolis = {
+    cities: string ResizeArray
+    population: uint
+} with
+    interface seq<string> with
+        member this.GetEnumerator() = new IntoIter(this) :> _ // The :> operator downcasts IntoIter to the inferred type of System.Collections.Generic.IEnumerator<string>, as required by the interface definition.
+    interface System.Collections.IEnumerable with
+        member this.GetEnumerator() = new IntoIter(this) :> _ // The :> operator downcasts IntoIter to the inferred type of System.Collections.IEnumerator, as required by the interface definition.
+and IntoIter(metropolis) =
+    let mutable current = Unchecked.defaultof<_>
+    interface System.Collections.Generic.IEnumerator<string> with
+        member _.Current = current
+        member _.Dispose() = () // No equivalent, called when iteration ends
+    interface System.Collections.IEnumerator with
+        member this.MoveNext() = // This is very similar to Rust's "next" except that this returns whether it's a Some, while the value is assigned to a private mutable variable read by the Current property
+            if metropolis.cities.Count > 0 then
+                current <- metropolis.cities.[0]
+                metropolis.cities.RemoveAt 0
+                true
+            else false
+        member _.Reset() = failwith "No resetting because both the Rust and F# versions only allow iterating once only, as the elements in the cities collection are removed as we iterate. The F# version could keep an IEnumerator from the ResizeArray to allow iterating more than once, but this would be inconsistent with the Rust version where the compiler enforces iterating once only."
+        member _.Current = current :> _
+```
+
+```fs
+let my_city = {
+    cities = ResizeArray ["Tallinn"; "Helsinki"]
+    population = 1_000_000u
+}
+
+for city in my_city do
+    printfn "%s" city
+```
+             
 ```
 Tallinn
 Helsinki
