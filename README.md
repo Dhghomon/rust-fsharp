@@ -124,7 +124,9 @@ Then you hit `cargo run` (like `dotnet run`), and it will download the external 
 
 * Rust `char` in F# is a `char` (.NET `Char`). Rust `char` is UTF-32 and is always four bytes, while in F# they are UTF-16.
 * Rust `unit` in F# is also `unit`. They both use `()` to represent it. This is one of those types that is very welcome to see for a Rustacean. (Almost) everything is an expression!
-* Rust `String` in F# is `string`. The F# documentation calls it "a sequential collection of characters that's used to represent text. A String object is a sequential collection of System.Char objects that represent a string", so that makes it very different from Rust's `&str` (a string slice) and much more like String, which is defined as:
+* Rust `str` in F# is `string`. The F# documentation calls it "a sequential collection of characters that's used to represent text. A String object is a sequential collection of System.Char objects that represent a string".
+* Rust `String` in F# is [`StringBuilder`](https://docs.microsoft.com/en-us/dotnet/api/system.text.stringbuilder?view=net-5.0). From the F# documentation: "Represents a mutable string of characters". It is used to effiecently build immutable 'string' objects.
+It is very similar to String which is defined as:
 
 ```rust
 pub struct String {
