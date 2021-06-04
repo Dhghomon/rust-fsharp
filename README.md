@@ -1955,7 +1955,7 @@ Now the big difference is that the Rust iterator methods work on anything that i
      
 Let's implement `Iterator` for a Metropolis type again. Each metropolis is composed of multiple cities, and our Metropolis iterator will return their names (if any). It'll look like this:
      
-Instead of implementing `Iterator` only, we will also implement `IntoIterator` because the cities vector is an iterable instead of an iterator. When `into_iter` is called, an `Iterator` for a Metropolis will be created.
+Instead of implementing `Iterator` only, we will also implement `IntoIterator` because the `cities` `Vec` is an iterable instead of an iterator. When `into_iter` is called, an `Iterator` for a Metropolis will be created.
      
 ```
 struct Metropolis {
