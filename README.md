@@ -1955,7 +1955,9 @@ Now the big difference is that the Rust iterator methods work on anything that i
      
 Let's implement `Iterator` for a Metropolis type again. Each metropolis is composed of multiple cities, and our Metropolis iterator will return their names (if any). It'll look like this:
      
-Instead of implementing `Iterator` only, we will also implement `IntoIterator` because the `cities` `Vec` is an iterable instead of an iterator. When `into_iter` is called, an `Iterator` for a Metropolis will be created.
+Next up after implementing `Iterator` only, we can also implement `IntoIterator` because the `cities` `Vec` is an iterable instead of an iterator. As the Rust documentation states, `By implementing IntoIterator for a type, you define how it will be converted to an iterator. This is common for types which describe a collection of some kind.` So when `into_iter` is called, an `Iterator` for a Metropolis will be created.
+     
+This next example is longer than the first, but note that most of it is just following the same format always seen when implementing `IntoIterator`. You can see another example [in the documentation](https://doc.rust-lang.org/std/iter/trait.IntoIterator.html) to compare with this one - they almost match up line by line.
      
 ```
 struct Metropolis {
