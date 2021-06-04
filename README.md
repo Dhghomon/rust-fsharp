@@ -2008,7 +2008,7 @@ Helsinki
      
 For F#, every collection implements the interface `seq<'T>`. The equivalent of `IntoIterator` is `seq<'T>`, while for `Iterator` it is `System.Collections.Generic.IEnumerator<'T>`. While implementing these interfaces, you must also implement the outdated non-generic versions that are essentially replaced by the generic versions in 2005 with .NET Framework 2.0. But in practice it is rare that you would implement these interfaces directly, instead you would access the actual collections and iterate them. Moreover, the boilerplate isn't that severe - it's just 4 additional lines of boilerplate (interface ... with / member GetEnumerator / interface ... with / member Current) that are extra compared to a clean design.
      
-F#'s `for` loops accept any type implementing the `seq<'T>` interface, so this construct is an alternative to only using library functions.
+F#'s `for` loops accept any type implementing the `seq<'T>` interface, so this construct is an alternative to only using library functions. Unlike the Rust `for` loop, the F# `for` loop only accepts iterables that can produce iterators on-demand, but not iterators by themselves.
      
 ```fs
 type Metropolis = {
