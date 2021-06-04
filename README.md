@@ -2031,7 +2031,7 @@ and IntoIter(metropolis) =
                 metropolis.cities.RemoveAt 0
                 true
             else false
-        member _.Reset() = failwith "No resetting because both the Rust version and the F# versions only iterate once only. The F# version could keep an IEnumerator from the ResizeArray to allow iterating more than once, but this would be inconsistent with the Rust version where the compiler enforces iterating once only."
+        member _.Reset() = failwith "No resetting because both the Rust and F# versions only iterate once only. The F# version could keep an IEnumerator from the ResizeArray to allow iterating more than once, but this would be inconsistent with the Rust version where the compiler enforces iterating once only."
         member _.Current = current :> _
 ```
 
