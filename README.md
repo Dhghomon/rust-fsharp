@@ -2016,9 +2016,9 @@ type Metropolis = {
     population: uint
 } with
     interface seq<string> with
-        member this.GetEnumerator() = new IntoIter(this) :> _
+        member this.GetEnumerator() = new IntoIter(this) :> _ // The :> operator downcasts IntoIter to the inferred type of System.Collections.Generic.IEnumerator<string>, as required by the interface definition.
     interface System.Collections.IEnumerable with
-        member this.GetEnumerator() = new IntoIter(this) :> _
+        member this.GetEnumerator() = new IntoIter(this) :> _ // The :> operator downcasts IntoIter to the inferred type of System.Collections.IEnumerator, as required by the interface definition.
 and IntoIter(metropolis) =
     let mutable current = Unchecked.defaultof<_>
     interface System.Collections.Generic.IEnumerator<string> with
