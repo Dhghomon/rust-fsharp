@@ -1961,17 +1961,25 @@ struct Metropolis {
     population: u32
 }
 
-impl Iterator for Metropolis {
-    type Item = String; // Tell Rust the associated type
-    
-    fn next(&mut self) -> Option<Self::Item> { // The signature for next is always the same
-     // Then our logic
-        if !self.cities.is_empty() {
-            Some(self.cities.remove(0)) // Remove removes an item and shifts the rest to the left
+impl IntoIterator for Metropolis {
+    type Item = String;
+    type IntoIter = IntoIter;
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIter(self)
+    }
+}
+
+pub struct IntoIter(Metropolis);
+impl Iterator for IntoIter {
+    type Item = String;
+    fn next(&mut self) -> Option<Self::Item> {
+        if !self.0.cities.is_empty() {
+            Some(self.0.cities.remove(0))
         } else {
             None
         }
     }
+}
 ```
      
 And here's a pleasant surprise: implementing `Iterator` lets you use a `for` loop! Let's try it in main:
@@ -1991,6 +1999,50 @@ fn main() {
      
 This prints:
      
+```
+Tallinn
+Helsinki
+```
+     
+For F#, every collection implements the interface `seq<'T>`. The equivalent of `IntoIterator` is `seq<'T>` while for `Iterator` it is `System.Collections.Generic.IEnumerator<'T>`. While implementing these interfaces, you must also implement the outdated non-generic versions that are essentially replaced by the generic versions in 2005 with .NET Framework 2.0.
+     
+F#'s `for` loops accept any type implementing the `seq<'T>` interface, so this construct is an alternative to only using library functions.
+     
+```fs
+type Metropolis = {
+    cities: string ResizeArray
+    population: uint
+} with
+    interface seq<string> with
+        member this.GetEnumerator() = new IntoIter(this) :> _
+    interface System.Collections.IEnumerable with
+        member this.GetEnumerator() = new IntoIter(this) :> _
+and IntoIter(metropolis) =
+    let mutable current = Unchecked.defaultof<_>
+    interface System.Collections.Generic.IEnumerator<string> with
+        member _.Current = current
+        member _.Dispose() = () // No equivalent, called when iteration ends
+    interface System.Collections.IEnumerator with
+        member this.MoveNext() = // This is very similar to Rust's next except that this returns whether it's a Some, while the value is assigned a mutable variable read by the Current property
+            if metropolis.cities.Count > 0 then
+                current <- metropolis.cities.[0]
+                metropolis.cities.RemoveAt 0
+                true
+            else false
+        member _.Reset() = failwith "No equivalent because unlike the Rust example which can only iterate once, F# allows iterating the same value more than once"
+        member _.Current = current :> _
+```
+
+```fs
+let my_city = {
+    cities = ResizeArray ["Tallinn"; "Helsinki"]
+    population = 1_000_000u
+}
+
+for city in my_city do
+    printfn "%s" city
+```
+             
 ```
 Tallinn
 Helsinki
