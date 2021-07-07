@@ -1046,7 +1046,7 @@ Then add some methods. First a new method. Note: `new` isn't a keyword in Rust -
 ```rust
 fn new() -> Self { // Can also write City
     Self {
-        name: "".to_string(),
+        name: String::new(),
         population: 0
     }
 }
