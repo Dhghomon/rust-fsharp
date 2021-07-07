@@ -1648,8 +1648,8 @@ Recursion works in Rust too, so this sort of function does work:
      
 ```rust
 fn print_vec(mut input: Vec<i32>) {
-    if !input.is_empty() { // note the !
-        println!("{}", input.pop().unwrap());
+    if let Some(last) = input.pop() {
+        println!("{}", last);
         print_vec(input); // calling the same function
     } else {
         println!("All done!");
