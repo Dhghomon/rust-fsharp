@@ -1404,7 +1404,7 @@ fn main() {
 
 But the moment you push something into the `Vec` it will know the type. So this will work:
  
-```
+```rust
 fn main() {
     let mut x = vec![];
     x.push(9);
@@ -1419,7 +1419,7 @@ Some of the most common are:
 
 `with_capacity`: every Vec has an automatically determined capacity that starts at 0, then goes to 4 and thereafter doubles whenever necessary. You can see this in action in the following code, which tracks the capacity of the `Vec` and prints whenever it doubles:
      
-```
+```rust
 fn main() {
     let mut new_vec = vec![];
     let mut current_capacity = new_vec.capacity();
@@ -1526,7 +1526,7 @@ Because they are composed of a head and a tail, F#ers love to put them into recu
      
 For Rustaceans, I think this type here I put together is probably similar to how a list looks in F#
      
-```
+```fs
 #[derive(Debug)]
 struct FSharpList<T> {
     head: Vec<T>, // A vec but we'll make sure it never has more than one item
@@ -1598,7 +1598,7 @@ printList myList
      
 The compiler is confused and unfortunately is not helping much with this message:
      
-```
+```fs
 The value or constructor 'printList' is not defined. Maybe you want one of the following:
    printf
    Printf
@@ -1721,7 +1721,7 @@ There's no point to this `Book` struct except as an example of the easiest way t
 
 Traits in Rust refer to common functionality that you can implement on your own types. A trait is basically a group of shared methods under a name, and with this name you can guarantee to the compiler in a generic function that the object being passed in will be able to perform the behaviour you want it to. For example, maybe you have a `struct City` and would like to add one `City` to another. Since there is no way for the compiler to know how to do this, you `implement Add` for your `City` type. Then you look at the `Add` [trait documentation](https://doc.rust-lang.org/std/ops/trait.Add.html) and see if there's anything you need to do. If you see a "Required Methods" on the top right, it means that you need to write the function out yourself. Add has `fn add` up there with the following example of implementation:
 
-```
+```rust
 impl Add for Point {
     type Output = Self;
 
@@ -1736,7 +1736,7 @@ impl Add for Point {
      
 This trait has an `associated type`: the type that goes with it. You can see it on the line here:
 
-```
+```rust
 type Output = Self;
 ```
      
@@ -1865,14 +1865,14 @@ Holding the mouse over `metropolis` shows `val metropolis : Metropolis`, and `pr
      
 While similar in this case, traits in Rust are quite different. Here's one more example of how they can be used, as trait bounds:
      
-```
+```rust
 trait Duckish {} // For duck-like things
 trait Doggish {} // For dog-like things
 ```
      
 We'll say that only duck-like things will implement Duckish, and dog-like things get Doggish. That's because we're going to make a `fn bark` and `fn quack` and don't want to let the wrong animal types use them. Note that the traits don't have any methods, but that's fine because they are just being used as bounds. The whole thing looks like this:
      
-```
+```rust
 trait Duckish {}
 trait Doggish {}
 
@@ -1918,7 +1918,7 @@ For the curious, [here are the methods for iterators in Rust](https://doc.rust-l
      
 Let's do some simple mapping in both languages. We'll make a Vec / List of three numbers that we'll double.
 
-```
+```rust
 fn main() {
     let num_vec = vec![7, 8, 9];
     
@@ -1939,7 +1939,7 @@ This prints `[14, 16, 18]`, no surprise. Note the following:
      
 The F# code is simpler:
      
-```
+```fs
 let listOne = [7..9]
 
 let listTwo = 
@@ -1959,7 +1959,7 @@ Next up after implementing `Iterator` only, we can also implement `IntoIterator`
      
 This next example is longer than the first, but note that most of it is just following the same format always seen when implementing `IntoIterator`. You can see another example [in the documentation](https://doc.rust-lang.org/std/iter/trait.IntoIterator.html) to compare with this one - they almost match up line by line.
      
-```
+```rust
 struct Metropolis {
     cities: Vec<String>,
     population: u32
@@ -2054,7 +2054,7 @@ Helsinki
 
 Fold is interesting. It can be used for more interesting things than adding everything together, but let's stick to the simple examples for now. Here's a simple fold in Rust:
  
-```
+```rust
 fn main() {
     let sum = (1..=10)
         .fold(0, |first_number, next_number| first_number + next_number);
@@ -2065,7 +2065,7 @@ fn main() {
      
 Fsharpers will notice that the order is reversed: you start with the beginning value (here a 0), then name the variables, and then give instructions for what to do with them.
      
-```
+```fs
 let sum = 
     [1..10]
     |> List.fold (fun firstNumber secondNumber -> firstNumber + secondNumber) 0
@@ -2077,7 +2077,7 @@ So for the Rustaceans, you do this: start with `List.fold`, then do the regular 
      
 But here's the interesting part. You can also write it like this:
 
-```
+```fs
 let sum = 
     [1..10]
     |> List.fold (+) 0
